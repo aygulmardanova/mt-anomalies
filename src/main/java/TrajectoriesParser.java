@@ -3,20 +3,24 @@ import entity.TrajectoryPoint;
 import exception.TrajectoriesParserException;
 import org.apache.commons.io.FilenameUtils;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 /*
-* stop symbols:
-* if meet number - read until ']' or ',' or ')'
-* [ - check for next, if [ - check for next, if [ - isX=true, if value - save x,
-* */
+ * stop symbols:
+ * if meet number - read until ']' or ',' or ')'
+ * [ - check for next, if [ - check for next, if [ - isX=true, if value - save x,
+ * */
 public class TrajectoriesParser {
 
     private int openingSqBracketNumber;
     private int closingSqBracketNumber;
+
+    private boolean trajectoryStarted = false;
+    private boolean trajectoryCoordinatesStarted = false;
     private int indexOfT;
 
     private StringBuilder x;
@@ -39,68 +43,116 @@ public class TrajectoriesParser {
         trajectories = new ArrayList<>();
     }
 
+    public List<Trajectory> parseTxt(String fileName) throws IOException, TrajectoriesParserException {
 
-    public List<Trajectory> parseTxt(String fileName) throws FileNotFoundException, TrajectoriesParserException {
-
-        File file = new File(FilenameUtils.normalize(fileName));
-        Scanner input = new Scanner(file);
-        while(input.hasNext()) {
-            String nextToken = input.next();
-            while (nextToken.equals("[")) {
-                openingSqBracketNumber++;
-                nextToken = input.next();
+        InputStream reader = new FileInputStream(FilenameUtils.normalize(fileName));
+        int intch;
+        while ((intch = reader.read()) != -1) {
+            char nextChar = (char) intch;
+            while ((nextChar == ',' || nextChar == ' '))
+                nextChar = (char) reader.read();
+            while (nextChar == '[') {
+                increaseOpeningSqBracketsCount();
+                nextChar = (char) reader.read();
             }
-            if (nextToken.equals("(")) {
-                readCoordinates(input);
+            while (trajectoryCoordinatesStarted) {
+                if (nextChar == '(') {
+                    readCoordinates(reader);
+                }
+                nextChar = (char) reader.read();
+                if (nextChar == ']') {
+                    increaseClosingSqBracketsCount();
+                }
             }
-            if (input.next().equals(",") && input.next().equals("[")) {
-                readTime(input);
-            } else {
-                throw new TrajectoriesParserException("After coordinates array with timestamps was expected");
+            nextChar = (char) reader.read();
+            while ((nextChar == ',' || nextChar == ' '))
+                nextChar = (char) reader.read();
+            if (trajectoryStarted) {
+                if (nextChar == '[') {
+                    increaseOpeningSqBracketsCount();
+                    readTime(reader);
+                } else {
+                    throw new TrajectoriesParserException("After coordinates array with timestamps was expected");
+                }
+                finishProcessingTrajectory();
             }
         }
 
-        input.close();
+        reader.close();
         return trajectories;
     }
 
-    private void readCoordinates(Scanner input) {
-        String nextToken = input.next();
-        while(!nextToken.equals(",")) {
-            x.append(nextToken);
-            nextToken = input.next();
+    private void processBracketsCount() {
+        if (openingSqBracketNumber == 1) {
+            trajectoryStarted = false;
+            trajectoryCoordinatesStarted = false;
         }
-        while(!nextToken.equals(")")) {
-            y.append(nextToken);
-            nextToken = input.next();
+        if (openingSqBracketNumber == 2) {
+            trajectoryStarted = true;
+            trajectoryCoordinatesStarted = false;
+        }
+        if (openingSqBracketNumber == 3) {
+            trajectoryCoordinatesStarted = true;
+        }
+    }
+
+    private void readCoordinates(InputStream reader) throws IOException {
+        char nextChar = (char) reader.read();
+        while (nextChar != ',') {
+            if (nextChar >= '0' && nextChar <= '9')
+                x.append(nextChar);
+            nextChar = (char) reader.read();
+        }
+        while (nextChar != ')') {
+            if (nextChar >= '0' && nextChar <= '9')
+                y.append(nextChar);
+            nextChar = (char) reader.read();
         }
         processTrajectoryPoint();
     }
 
-    private void readTime(Scanner input) throws TrajectoriesParserException {
-        String nextToken = input.next();
-        while(!nextToken.equals("]")) {
-            while(!nextToken.equals(",") && !nextToken.equals("]")) {
-                t.append(nextToken);
-                nextToken = input.next();
+    private void readTime(InputStream reader) throws IOException {
+        char nextChar = (char) reader.read();
+        while (nextChar != ']') {
+            while (nextChar != ',' && nextChar != ']') {
+                t.append(nextChar);
+                nextChar = (char) reader.read();
+            }
+            if (nextChar == ']') {
+                increaseClosingSqBracketsCount();
             }
 //            update trajectoryPoint at current index with a timestamp
-            trajectoryPoints.get(indexOfT).setTimestamp(Integer.valueOf(t.toString()));
+            trajectoryPoints.get(indexOfT).setTimestamp(Integer.valueOf(t.toString().trim()));
             indexOfT++;
             t = new StringBuilder();
-            nextToken = input.next();
+            nextChar = (char) reader.read();
         }
-        if (!input.next().equals("]"))
-            throw new TrajectoriesParserException("Closing square bracket ']' expected after trajectories array");
-//        at this point, one trajectory is processed and closed.
-//        Next token must be comma or third closing square bracket
+    }
+
+    private void increaseOpeningSqBracketsCount() {
+        openingSqBracketNumber++;
+        closingSqBracketNumber--;
+        processBracketsCount();
+    }
+
+    private void increaseClosingSqBracketsCount() {
+        openingSqBracketNumber--;
+        closingSqBracketNumber++;
+        processBracketsCount();
+    }
+
+    private void finishProcessingTrajectory() {
         trajectories.add(new Trajectory(trajectoryPoints));
+        trajectoryPoints = new ArrayList<>();
+        indexOfT = 0;
+        trajectoryStarted = false;
+        increaseClosingSqBracketsCount();
     }
 
     private void processTrajectoryPoint() {
         TrajectoryPoint point = new TrajectoryPoint();
-        point.setX(Integer.valueOf(x.toString()));
-        point.setY(Integer.valueOf(y.toString()));
+        point.setX(Integer.valueOf(x.toString().trim()));
+        point.setY(Integer.valueOf(y.toString().trim()));
         trajectoryPoints.add(point);
 
         x = new StringBuilder();

@@ -10,7 +10,7 @@ public class JavaMain {
     private static final String FILE_NAME = "4.txt";
 
     public static void main(String[] args) throws IOException, TrajectoriesParserException {
-        List<Trajectory> trajectories = new TrajectoriesParser2().parseTxt(FILE_DIR + FILE_NAME);
+        List<Trajectory> trajectories = new TrajectoriesParser().parseTxt(FILE_DIR + FILE_NAME);
         System.out.println(trajectories.size());
     }
 }
