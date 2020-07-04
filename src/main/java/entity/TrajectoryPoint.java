@@ -4,40 +4,54 @@ import java.util.Objects;
 
 public class TrajectoryPoint {
 
-    private Integer x;
-    private Integer y;
-    private Integer timestamp;
+    private long x;
+    private long y;
+    private long time;
 
     @Override
     public String toString() {
         return "TrajectoryPoint{" +
-                "x=" + x +
-                ", y=" + y +
-                ", timestamp=" + timestamp +
+                "x=" + this.x +
+                ", y=" + this.y +
+                ", timestamp=" + this.time +
                 '}';
     }
 
-    public TrajectoryPoint() {
-    }
-
-    public void setX(Integer x) {
+    public TrajectoryPoint(long x, long y) {
         this.x = x;
-    }
-
-    public Integer getY() {
-        return y;
-    }
-
-    public void setY(Integer y) {
         this.y = y;
     }
 
-    public Integer getTimestamp() {
-        return timestamp;
+    public long getX() {
+        return this.x;
     }
 
-    public void setTimestamp(Integer timestamp) {
-        this.timestamp = timestamp;
+    public void setX(long x) {
+        this.x = x;
+    }
+
+    public long getY() {
+        return this.y;
+    }
+
+    public void setY(long y) {
+        this.y = y;
+    }
+
+    public long getTime() {
+        return this.time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
+    }
+
+    public double distanceTo(TrajectoryPoint other) {
+        if (this == other) {
+            return 0;
+        }
+        double d = Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2);
+        return Math.sqrt(d);
     }
 
     @Override
@@ -47,11 +61,11 @@ public class TrajectoryPoint {
         TrajectoryPoint that = (TrajectoryPoint) o;
         return Objects.equals(x, that.x) &&
                 Objects.equals(y, that.y) &&
-                Objects.equals(timestamp, that.timestamp);
+                Objects.equals(time, that.time);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(x, y, timestamp);
+        return Objects.hash(x, y, time);
     }
 }

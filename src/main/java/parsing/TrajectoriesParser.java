@@ -1,3 +1,5 @@
+package parsing;
+
 import entity.Trajectory;
 import entity.TrajectoryPoint;
 import exception.TrajectoriesParserException;
@@ -122,7 +124,7 @@ public class TrajectoriesParser {
                 increaseClosingSqBracketsCount();
             }
 //            update trajectoryPoint at current index with a timestamp
-            trajectoryPoints.get(indexOfT).setTimestamp(Integer.valueOf(t.toString().trim()));
+            trajectoryPoints.get(indexOfT).setTime(Integer.valueOf(t.toString().trim()));
             indexOfT++;
             t = new StringBuilder();
             nextChar = (char) reader.read();
@@ -150,9 +152,10 @@ public class TrajectoriesParser {
     }
 
     private void processTrajectoryPoint() {
-        TrajectoryPoint point = new TrajectoryPoint();
-        point.setX(Integer.valueOf(x.toString().trim()));
-        point.setY(Integer.valueOf(y.toString().trim()));
+        TrajectoryPoint point = new TrajectoryPoint(
+                Integer.valueOf(x.toString().trim()),
+                Integer.valueOf(y.toString().trim())
+        );
         trajectoryPoints.add(point);
 
         x = new StringBuilder();

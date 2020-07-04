@@ -2,9 +2,9 @@ package utils
 
 import dbis.stark.STObject.GeoType
 import dbis.stark.STObject
-import org.locationtech.jts.geom.{Coordinate, Geometry, GeometryFactory}
+import org.locationtech.jts.geom.{Coordinate, GeometryFactory}
 
-object STObjectUtils {
+object STUtils {
 
   def createPoint(x: Long, y: Long): GeoType = {
     new GeometryFactory().createPoint(new Coordinate(x,y))

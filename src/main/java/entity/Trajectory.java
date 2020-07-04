@@ -2,6 +2,7 @@ package entity;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Trajectory {
 
@@ -22,6 +23,14 @@ public class Trajectory {
         this.trajectoryPoints = trajectoryPoints;
     }
 
+    public Integer length() {
+        return this.trajectoryPoints.size();
+    }
+
+    public TrajectoryPoint get(int index) {
+        return this.trajectoryPoints.get(index);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -32,6 +41,15 @@ public class Trajectory {
                 .allMatch(trajectoryPoint ->
                         that.trajectoryPoints.stream()
                                 .anyMatch(t -> t.equals(trajectoryPoint)));
+    }
+
+    @Override
+    public String toString() {
+        return "Trajectory{" +
+                "(" +
+                trajectoryPoints.stream().map(tp -> tp.getX() + ", " + tp.getY()).collect(Collectors.joining("), (")) +
+                ")" +
+                '}';
     }
 
     @Override
