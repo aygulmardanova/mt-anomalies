@@ -112,25 +112,55 @@ public class ClusteringJava {
         return t;
     }
 
+    /**
+     * calc δ
+     * @param m length of first trajectory
+     * @param n length of second trajectory
+     * @return δ value
+     */
     private Double getDelta(int m, int n) {
         return 0.5 * min(m, n);
     }
 
+    /**
+     * calc ε
+     * @param m length of first trajectory
+     * @param n length of second trajectory
+     * @return ε value
+     */
     private Double getEpsilon(int m, int n) {
         return 0.7;
     }
 
+    /**
+     * At each step calc a distance matrix btwn clusters
+     * Merge two clusters with a min dist -> requires an update of the dist matrix
+     *
+     * @param level which level of hierarchical tree of clusters to work with
+     */
+    private void calcClustersDistMatrix(int level) {
+
+    }
 
     /**
      * Calculates inter-clusters distance for two input clusters
-     * using single-link method
+     * using 'single-link' linkage method:
+     * the between-cluster distance == the min distance btwn two trajectories in the two clusters
      *
      * @param cluster1 first cluster
      * @param cluster2 second cluster
      * @return distance between clusters
      */
     private Double calcClustersDist(Cluster cluster1, Cluster cluster2) {
-        return 0.0;
+        double dist = Double.MAX_VALUE;
+        for (Trajectory trajectory1 : cluster1.getTrajectories()) {
+            for (Trajectory trajectory2 : cluster2.getTrajectories()) {
+                double lcssDist = calcLCSSDist(trajectory1, trajectory2);
+                if (lcssDist < dist)
+                    dist = lcssDist;
+            }
+        }
+        return dist;
     }
 
 

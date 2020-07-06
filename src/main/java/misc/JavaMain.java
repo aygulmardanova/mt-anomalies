@@ -1,3 +1,5 @@
+package misc;
+
 import entity.Trajectory;
 import entity.TrajectoryPoint;
 import exception.TrajectoriesParserException;
@@ -9,20 +11,19 @@ import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import static misc.Constants.FILE_DIR;
+import static misc.Constants.INPUT_FILE_NAMES;
+
 public class JavaMain {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(JavaMain.class.getName());
 
-    private static final String FILE_DIR = "/Users/aygulmardanova/IdeaProjects/ILMENAU/mt-anomalies/src/main/resources/input/";
-//    private static final String FILE_NAME = "4.txt";
-    private static final String[] FILE_NAMES = {"1.txt", "2.txt", "3.txt", "4.txt"};
-
     public static void main(String[] args) throws IOException, TrajectoriesParserException {
 
-        for (String FILE_NAME: FILE_NAMES) {
+        for (String fileName: INPUT_FILE_NAMES) {
             LOGGER.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-            LOGGER.info("Trajectories parsing from (" + FILE_NAME + ") started");
-            List<Trajectory> trajectories = new TrajectoriesParser().parseTxt(FILE_DIR + FILE_NAME);
+            LOGGER.info("Trajectories parsing from (" + fileName + ") started");
+            List<Trajectory> trajectories = new TrajectoriesParser().parseTxt(FILE_DIR + fileName);
             LOGGER.info("Total amount of trajectories: " + trajectories.size());
 
             printInputBorders(trajectories);
