@@ -7,8 +7,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import static misc.Constants.FILE_DIR;
-import static misc.Constants.IMG_FILE_NAMES;
+import static misc.Utils.FILE_DIR;
+import static misc.Utils.IMG_FILE_NAMES;
 
 public class DisplayImageMain {
 

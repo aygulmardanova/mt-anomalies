@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import static misc.Constants.FILE_DIR;
-import static misc.Constants.INPUT_FILE_NAMES;
+import static misc.Utils.FILE_DIR;
+import static misc.Utils.INPUT_FILE_NAMES;
 
 public class JavaMain {
 

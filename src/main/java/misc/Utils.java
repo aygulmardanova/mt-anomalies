@@ -1,6 +1,6 @@
 package misc;
 
-public class Constants {
+public class Utils {
 
     public static final String FILE_DIR = "/Users/aygulmardanova/IdeaProjects/ILMENAU/mt-anomalies/src/main/resources/input/";
     public static final String[] INPUT_FILE_NAMES = {"1.txt", "2.txt", "3.txt", "4.txt"};
