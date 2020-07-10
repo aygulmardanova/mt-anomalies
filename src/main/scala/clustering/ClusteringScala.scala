@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ListBuffer
 
-object Clustering {
+object ClusteringScala {
 
-  private val LOGGER = LoggerFactory.getLogger(Clustering.getClass)
+  private val LOGGER = LoggerFactory.getLogger(ClusteringScala.getClass)
 
 
   /*

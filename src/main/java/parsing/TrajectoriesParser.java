@@ -19,11 +19,11 @@ import java.util.List;
 public class TrajectoriesParser {
 
     private int openingSqBracketNumber;
-    private int closingSqBracketNumber;
 
     private boolean trajectoryStarted = false;
     private boolean trajectoryCoordinatesStarted = false;
     private int indexOfT;
+    private int indexOfTP;
 
     private StringBuilder x;
     private StringBuilder y;
@@ -34,8 +34,8 @@ public class TrajectoriesParser {
 
     public TrajectoriesParser() {
         openingSqBracketNumber = 0;
-        closingSqBracketNumber = 0;
         indexOfT = 0;
+        indexOfTP = 0;
 
         x = new StringBuilder();
         y = new StringBuilder();
@@ -124,8 +124,8 @@ public class TrajectoriesParser {
                 increaseClosingSqBracketsCount();
             }
 //            update trajectoryPoint at current index with a timestamp
-            trajectoryPoints.get(indexOfT).setTime(Integer.valueOf(t.toString().trim()));
-            indexOfT++;
+            trajectoryPoints.get(indexOfTP).setTime(Integer.valueOf(t.toString().trim()));
+            indexOfTP++;
             t = new StringBuilder();
             nextChar = (char) reader.read();
         }
@@ -133,20 +133,19 @@ public class TrajectoriesParser {
 
     private void increaseOpeningSqBracketsCount() {
         openingSqBracketNumber++;
-        closingSqBracketNumber--;
         processBracketsCount();
     }
 
     private void increaseClosingSqBracketsCount() {
         openingSqBracketNumber--;
-        closingSqBracketNumber++;
         processBracketsCount();
     }
 
     private void finishProcessingTrajectory() {
-        trajectories.add(new Trajectory(trajectoryPoints));
+        trajectories.add(new Trajectory(indexOfT, trajectoryPoints));
         trajectoryPoints = new ArrayList<>();
-        indexOfT = 0;
+        indexOfT++;
+        indexOfTP = 0;
         trajectoryStarted = false;
         increaseClosingSqBracketsCount();
     }

@@ -2,15 +2,14 @@ package javaclustering;
 
 import entity.Cluster;
 import entity.Trajectory;
+import entity.TrajectoryPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.Math.*;
+import static java.util.stream.Collectors.toList;
 
 public class ClusteringJava {
 
@@ -23,6 +22,22 @@ public class ClusteringJava {
      */
     private List<Map<Integer, Cluster>> clusters = new ArrayList<>();
 
+    private Double[][] lcssDistances;
+    private long minX;
+    private long maxX;
+    private long minY;
+    private long maxY;
+
+    public ClusteringJava(List<Trajectory> trajectories) {
+        lcssDistances = new Double[trajectories.size()][trajectories.size()];
+    }
+
+    public void setBorders(long minX, long maxX, long minY, long maxY) {
+        this.minX = minX;
+        this.maxX = maxX;
+        this.minY = minY;
+        this.maxY = maxY;
+    }
 
     /**
      * Single linkage
@@ -55,6 +70,7 @@ public class ClusteringJava {
 
     /**
      * Calculates LCSS distance for two input trajectories
+     * Smaller the LCSS distance - the better (0.0 - equal trajectories)
      *
      * @param t1 first trajectory
      * @param t2 second trajectory
@@ -65,23 +81,27 @@ public class ClusteringJava {
         int n = t2.length();
 
         double delta = getDelta(m, n);
-        double epsilon = getEpsilon(m, n);
+        double epsilonX = getEpsilonX(m, n);
+        double epsilonY = getEpsilonY(m, n);
 
-        double dist = 1 - calcLCSS(t1, t2, delta, epsilon) / min(m, n);
+        double dist = 1 - calcLCSS(t1, t2, delta, epsilonX, epsilonY) / min(m, n);
+        lcssDistances[t1.getId()][t2.getId()] = dist;
         return dist;
     }
 
 
     /**
      * Calculates LCSS for two input trajectories
+     * Bigger the LCSS - the better
      *
-     * @param t1      first trajectory
-     * @param t2      second trajectory
-     * @param delta   δ parameter: how far we can look in time to match a given point from one T to a point in another T
-     * @param epsilon ε parameter: the size of proximity in which to look for matches, 0 < ε < 1
+     * @param t1       first trajectory
+     * @param t2       second trajectory
+     * @param delta    δ parameter: how far we can look in time to match a given point from one T to a point in another T
+     * @param epsilonX ε parameter: the size of proximity in which to look for matches on X-coordinate
+     * @param epsilonY ε parameter: the size of proximity in which to look for matches on Y-coordinate
      * @return LCSS for t1 and t2
      */
-    private Double calcLCSS(Trajectory t1, Trajectory t2, Double delta, Double epsilon) {
+    private Double calcLCSS(Trajectory t1, Trajectory t2, Double delta, Double epsilonX, Double epsilonY) {
         int m = t1.length();
         int n = t2.length();
 
@@ -92,28 +112,34 @@ public class ClusteringJava {
 //      according to [8]: delta and epsilon as thresholds for X- and Y-axes respectively
 //      Then the abscissa difference and ordinate difference are less than thresholds (they are relatively close to each other)
 //      they are considered similar and LCSS distance is increased by 1
-        else if (abs(t1.get(m - 1).getX() - t2.get(n - 1).getX()) < epsilon
-                && abs(t1.get(m - 1).getY() - t2.get(n - 1).getY()) < epsilon
+        else if (abs(t1.get(m - 1).getX() - t2.get(n - 1).getX()) < epsilonX
+                && abs(t1.get(m - 1).getY() - t2.get(n - 1).getY()) < epsilonY
                 && abs(m - n) <= delta) {
-            return 1 + calcLCSS(rest(t1), rest(t2), delta, epsilon);
+            return 1 + calcLCSS(rest(t1), rest(t2), delta, epsilonX, epsilonY);
         } else {
-            return max(calcLCSS(rest(t1), t2, delta, epsilon), calcLCSS(t1, rest(t2), delta, epsilon));
+            return max(
+                    calcLCSS(rest(t1), t2, delta, epsilonX, epsilonY),
+                    calcLCSS(t1, rest(t2), delta, epsilonX, epsilonY)
+            );
         }
     }
 
     /**
-     * Calculates LCSS for two input trajectories
+     * Calculates shortened trajectory by excluding last trajectory point
      *
      * @param t trajectory
      * @return trajectory without last trajectory point
      */
     private Trajectory rest(Trajectory t) {
-        t.getTrajectoryPoints().remove(t.length() - 1);
-        return t;
+        List<TrajectoryPoint> tpClone = t.getTrajectoryPoints().stream()
+                .map(TrajectoryPoint::clone).collect(toList());
+        tpClone.remove(t.length() - 1);
+        return new Trajectory(t.getId(), tpClone);
     }
 
     /**
      * calc δ
+     *
      * @param m length of first trajectory
      * @param n length of second trajectory
      * @return δ value
@@ -123,13 +149,25 @@ public class ClusteringJava {
     }
 
     /**
-     * calc ε
+     * calc ε for X
+     *
      * @param m length of first trajectory
      * @param n length of second trajectory
      * @return ε value
      */
-    private Double getEpsilon(int m, int n) {
-        return 0.7;
+    private Double getEpsilonX(int m, int n) {
+        return 0.1 * (maxX - minX);
+    }
+
+    /**
+     * calc ε for Y
+     *
+     * @param m length of first trajectory
+     * @param n length of second trajectory
+     * @return ε value
+     */
+    private Double getEpsilonY(int m, int n) {
+        return 0.1 * (maxY - minY);
     }
 
     /**

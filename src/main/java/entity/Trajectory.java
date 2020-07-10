@@ -2,9 +2,12 @@ package entity;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.joining;
 
 public class Trajectory {
+
+    private int id;
 
     private List<TrajectoryPoint> trajectoryPoints;
 
@@ -13,6 +16,15 @@ public class Trajectory {
 
     public Trajectory(List<TrajectoryPoint> trajectoryPoints) {
         this.trajectoryPoints = trajectoryPoints;
+    }
+
+    public Trajectory(int id, List<TrajectoryPoint> trajectoryPoints) {
+        this.id = id;
+        this.trajectoryPoints = trajectoryPoints;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public List<TrajectoryPoint> getTrajectoryPoints() {
@@ -46,8 +58,12 @@ public class Trajectory {
     @Override
     public String toString() {
         return "Trajectory{" +
+                "id=" + id + ", " +
+                "length=" + trajectoryPoints.size() + ", " +
                 "(" +
-                trajectoryPoints.stream().map(tp -> tp.getX() + ", " + tp.getY()).collect(Collectors.joining("), (")) +
+                trajectoryPoints.stream()
+                        .map(tp -> tp.getX() + ", " + tp.getY())
+                        .collect(joining("), (")) +
                 ")" +
                 '}';
     }

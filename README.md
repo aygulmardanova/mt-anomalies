@@ -1,10 +1,9 @@
 # Master Thesis project
 ## Trajectory Anomalies Detection in Spatio-temporal Data
 
-Project consists of two modules:
-* **_java_** - 
+Project consists of module:
+* **_java_**
     * input data (txt file) parsing and trajectories extraction
-* **_scala_** - 
     * trajectories clustering and 
     * anomalies detection algorithms implementation
 

@@ -2,11 +2,16 @@ package entity;
 
 import java.util.Objects;
 
-public class TrajectoryPoint {
+public class TrajectoryPoint implements Cloneable {
 
     private long x;
     private long y;
     private long time;
+
+    public TrajectoryPoint(long x, long y) {
+        this.x = x;
+        this.y = y;
+    }
 
     @Override
     public String toString() {
@@ -17,9 +22,14 @@ public class TrajectoryPoint {
                 '}';
     }
 
-    public TrajectoryPoint(long x, long y) {
-        this.x = x;
-        this.y = y;
+    @Override
+    public TrajectoryPoint clone() {
+        try {
+            return (TrajectoryPoint) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public long getX() {
