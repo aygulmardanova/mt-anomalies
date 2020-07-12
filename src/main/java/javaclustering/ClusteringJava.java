@@ -27,17 +27,17 @@ public class ClusteringJava {
 
     private Double[][] trajLCSSDistances;
     private Double[][] clustLCSSDistances;
-    private long minX;
-    private long maxX;
-    private long minY;
-    private long maxY;
+    private int minX;
+    private int maxX;
+    private int minY;
+    private int maxY;
 
     public ClusteringJava(List<Trajectory> trajectories) {
         trajLCSSDistances = new Double[trajectories.size()][trajectories.size()];
         clustLCSSDistances = new Double[trajectories.size()][trajectories.size()];
     }
 
-    public void setBorders(long minX, long maxX, long minY, long maxY) {
+    public void setBorders(int minX, int maxX, int minY, int maxY) {
         this.minX = minX;
         this.maxX = maxX;
         this.minY = minY;

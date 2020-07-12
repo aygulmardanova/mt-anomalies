@@ -27,7 +27,7 @@ public class JavaMain {
             List<Trajectory> trajectories = parseTrajectories(input + INPUT_FILE_EXTENSION);
             clusteringJava = new ClusteringJava(trajectories);
             printInputBorders(trajectories);
-            displayImage(input + INPUT_IMG_EXTENSION);
+            displayImage(input + INPUT_IMG_EXTENSION, trajectories);
 //            for (Trajectory t1 : trajectories) {
 //                for (Trajectory t2 : trajectories) {
 //                    if (t1 != t2) {
@@ -47,8 +47,8 @@ public class JavaMain {
 
     }
 
-    private static void displayImage(String fileName) throws IOException {
-        DisplayImage.displaySimpleImage(FILE_DIR + fileName);
+    private static void displayImage(String fileName, List<Trajectory> trajectories) throws IOException {
+        new DisplayImage().display(FILE_DIR + fileName, trajectories);
     }
 
     private static double calcDist(Trajectory t1, Trajectory t2) {
@@ -66,28 +66,28 @@ public class JavaMain {
     }
 
     private static void printInputBorders(List<Trajectory> trajectories) {
-        long minX = trajectories.stream()
-                .mapToLong(tr ->
+        int minX = trajectories.stream()
+                .mapToInt(tr ->
                         tr.getTrajectoryPoints().stream()
-                                .mapToLong(TrajectoryPoint::getX)
+                                .mapToInt(TrajectoryPoint::getX)
                                 .min().orElseThrow(NoSuchElementException::new))
                 .min().orElseThrow(NoSuchElementException::new);
-        long minY = trajectories.stream()
-                .mapToLong(tr ->
+        int minY = trajectories.stream()
+                .mapToInt(tr ->
                         tr.getTrajectoryPoints().stream()
-                                .mapToLong(TrajectoryPoint::getY)
+                                .mapToInt(TrajectoryPoint::getY)
                                 .min().orElseThrow(NoSuchElementException::new))
                 .min().orElseThrow(NoSuchElementException::new);
-        long maxX = trajectories.stream()
-                .mapToLong(tr ->
+        int maxX = trajectories.stream()
+                .mapToInt(tr ->
                         tr.getTrajectoryPoints().stream()
-                                .mapToLong(TrajectoryPoint::getX)
+                                .mapToInt(TrajectoryPoint::getX)
                                 .max().orElseThrow(NoSuchElementException::new))
                 .max().orElseThrow(NoSuchElementException::new);
-        long maxY = trajectories.stream()
-                .mapToLong(tr ->
+        int maxY = trajectories.stream()
+                .mapToInt(tr ->
                         tr.getTrajectoryPoints().stream()
-                                .mapToLong(TrajectoryPoint::getY)
+                                .mapToInt(TrajectoryPoint::getY)
                                 .max().orElseThrow(NoSuchElementException::new))
                 .max().orElseThrow(NoSuchElementException::new);
         clusteringJava.setBorders(minX, maxX, minY, maxY);
