@@ -52,6 +52,12 @@ public class DisplayImage {
         frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     }
 
+    /**
+     * Draws trajectories on an image
+     *
+     * @param img output image to display trajectories
+     * @param trajectories array of input trajectories
+     */
     private void drawTrajectories(BufferedImage img,  java.util.List<Trajectory> trajectories) {
         trajectories.forEach(t ->
                 t.getTrajectoryPoints().forEach(tp ->
@@ -59,14 +65,21 @@ public class DisplayImage {
         );
     }
 
+    /**
+     * Adds a trajectory point pixel to image with red color.
+     * Pixel takes place of 3*3 surrounding pixels
+     *
+     * @param img output image to add trajectory point on to
+     * @param tp trajectory point with pixel coordinates
+     */
     private void drawBoldTrajectoryPoint(BufferedImage img, TrajectoryPoint tp) {
         if (tp.getX() + 2 >= img.getWidth() || tp.getY() + 2 >= img.getHeight()) {
             LOGGER.error("Out of image borders: (" + tp.getX() + ", " + tp.getY() + ")");
             return;
         }
 
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
+        for (int i = -1; i < 2; i++) {
+            for (int j = -1; j < 2; j++) {
                 img.setRGB(tp.getX() + i, tp.getY() + j, color);
             }
         }
