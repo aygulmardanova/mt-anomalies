@@ -51,4 +51,8 @@ public class Cluster {
         this.trajectories.add(trajectory);
     }
 
+    public void appendTrajectories(List<Trajectory> trajectories) {
+        this.trajectories.addAll(trajectories);
+    }
+
 }

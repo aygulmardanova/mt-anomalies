@@ -6,7 +6,9 @@ import entity.TrajectoryPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static java.lang.Math.*;
 import static java.util.stream.Collectors.toList;
@@ -21,15 +23,18 @@ public class ClusteringJava {
      *
      */
     private List<Map<Integer, Cluster>> clusters = new ArrayList<>();
+    private List<Cluster> clusterIds = new ArrayList<>();
 
-    private Double[][] lcssDistances;
+    private Double[][] trajLCSSDistances;
+    private Double[][] clustLCSSDistances;
     private long minX;
     private long maxX;
     private long minY;
     private long maxY;
 
     public ClusteringJava(List<Trajectory> trajectories) {
-        lcssDistances = new Double[trajectories.size()][trajectories.size()];
+        trajLCSSDistances = new Double[trajectories.size()][trajectories.size()];
+        clustLCSSDistances = new Double[trajectories.size()][trajectories.size()];
     }
 
     public void setBorders(long minX, long maxX, long minY, long maxY) {
@@ -57,15 +62,51 @@ public class ClusteringJava {
      * @param trajectories A database of trajectories
      * @return Clusters of trajectories
      */
-    public void cluster(List<Trajectory> trajectories) {
+    public List<Cluster> cluster(List<Trajectory> trajectories) {
+        initClusters(trajectories);
+        whileCluster(10);
+        return clusterIds;
+    }
+
+    public void initClusters(List<Trajectory> trajectories) {
 //    initialisation
-        final int[] i = {0};
-        trajectories.forEach(trajectory -> {
-            clusters.add(new HashMap<Integer, Cluster>() {{
-                put(i[0], new Cluster(trajectory));
-            }});
-            i[0]++;
-        });
+        trajectories.forEach(trajectory ->
+                clusterIds.add(new Cluster(trajectory)));
+    }
+
+
+    /**
+     * stopPoint - desired number of clusters to stop:
+     * if null - stop when 1 cluster is left
+     *      if no joins are possible, stop.
+     */
+    public void whileCluster(Integer stopPoint) {
+        if (stopPoint == null)
+            stopPoint = 1;
+        int numOfClusters = clustLCSSDistances.length;
+        double minClustDist = Double.MAX_VALUE;
+        while (numOfClusters > stopPoint) {
+            List<Integer> ids = clusterIds.stream().map(Cluster::getId).collect(toList());
+            int id1 = -1;
+            int id2 = -1;
+            for (Integer i1: ids) {
+                for (Integer i2: ids) {
+                    if (!i1.equals(i2) && clustLCSSDistances[i1][i2] != null && clustLCSSDistances[i1][i2] < minClustDist) {
+                        minClustDist = clustLCSSDistances[i1][i2];
+                        id1 = i1;
+                        id2 = i2;
+                    }
+                }
+            }
+//            join i1 and i2 clusters, add i1 traj-es to cluster i2
+            clusterIds.get(id1).appendTrajectories(clusterIds.get(id2).getTrajectories());
+//            remove i2 from 'clusterIds' and 'clusters'
+            clusterIds.remove(id2);
+//            recalculate D for i1 and i2 lines -> set i2 line all to NULLs
+            
+
+            numOfClusters--;
+        }
     }
 
     /**
@@ -85,7 +126,8 @@ public class ClusteringJava {
         double epsilonY = getEpsilonY(m, n);
 
         double dist = 1 - calcLCSS(t1, t2, delta, epsilonX, epsilonY) / min(m, n);
-        lcssDistances[t1.getId()][t2.getId()] = dist;
+        trajLCSSDistances[t1.getId()][t2.getId()] = dist;
+        clustLCSSDistances[t1.getId()][t2.getId()] = dist;
         return dist;
     }
 
@@ -109,6 +151,7 @@ public class ClusteringJava {
             return 0.0;
         }
 
+//      check last trajectory point (of each trajectory-part recursively)
 //      according to [8]: delta and epsilon as thresholds for X- and Y-axes respectively
 //      Then the abscissa difference and ordinate difference are less than thresholds (they are relatively close to each other)
 //      they are considered similar and LCSS distance is increased by 1
@@ -193,12 +236,16 @@ public class ClusteringJava {
         double dist = Double.MAX_VALUE;
         for (Trajectory trajectory1 : cluster1.getTrajectories()) {
             for (Trajectory trajectory2 : cluster2.getTrajectories()) {
-                double lcssDist = calcLCSSDist(trajectory1, trajectory2);
-                if (lcssDist < dist)
+                Double lcssDist = trajLCSSDistances[trajectory1.getId()][trajectory2.getId()];
+                if (lcssDist != null && lcssDist < dist)
                     dist = lcssDist;
             }
         }
         return dist;
+    }
+
+    private void joinClusters() {
+
     }
 
 

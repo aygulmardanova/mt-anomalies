@@ -7,6 +7,7 @@ import javaclustering.ClusteringJava;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import parsing.TrajectoriesParser;
+import visualisation.DisplayImage;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,18 +23,18 @@ public class JavaMain {
 
     public static void main(String[] args) throws IOException, TrajectoriesParserException {
 
-        for (String fileName: INPUT_FILE_NAMES) {
-            List<Trajectory> trajectories = parseTrajectories(fileName);
+        for (String input: INPUT_FILE_NAMES) {
+            List<Trajectory> trajectories = parseTrajectories(input + INPUT_FILE_EXTENSION);
             clusteringJava = new ClusteringJava(trajectories);
             printInputBorders(trajectories);
-
-            for (Trajectory t1 : trajectories) {
-                for (Trajectory t2 : trajectories) {
-                    if (t1 != t2) {
-                        calcDist(t1, t2);
-                    }
-                }
-            }
+            displayImage(input + INPUT_IMG_EXTENSION);
+//            for (Trajectory t1 : trajectories) {
+//                for (Trajectory t2 : trajectories) {
+//                    if (t1 != t2) {
+//                        calcDist(t1, t2);
+//                    }
+//                }
+//            }
         }
     }
 
@@ -44,6 +45,10 @@ public class JavaMain {
         LOGGER.info("Total amount of trajectories: " + trajectories.size());
         return trajectories;
 
+    }
+
+    private static void displayImage(String fileName) throws IOException {
+        DisplayImage.displaySimpleImage(FILE_DIR + fileName);
     }
 
     private static double calcDist(Trajectory t1, Trajectory t2) {

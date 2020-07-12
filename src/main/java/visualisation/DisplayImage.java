@@ -7,14 +7,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import static misc.Utils.FILE_DIR;
-import static misc.Utils.IMG_FILE_NAMES;
+public class DisplayImage {
 
-public class DisplayImageMain {
-
-    public static void main(String[] args) throws IOException {
-
-        BufferedImage img = ImageIO.read(new File(FILE_DIR + IMG_FILE_NAMES[0]));
+    public static void displaySimpleImage(String file) throws IOException {
+        BufferedImage img = ImageIO.read(new File(file));
         ImageIcon icon = new ImageIcon(img);
         JFrame frame = new JFrame();
         frame.setLayout(new FlowLayout());
@@ -23,7 +19,7 @@ public class DisplayImageMain {
         lbl.setIcon(icon);
         frame.add(lbl);
         frame.setVisible(true);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     }
 
 }
