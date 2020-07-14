@@ -12,6 +12,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+import static misc.Utils.*;
+
 public class DisplayImage {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DisplayImage.class.getName());
@@ -34,15 +36,20 @@ public class DisplayImage {
 
     };
 
-    public void display(String file, java.util.List<Trajectory> trajectories) throws IOException {
-        BufferedImage img = ImageIO.read(new File(file));
-        ImageIcon icon = new ImageIcon(img);
+    public void displayAndSave(String fileName, java.util.List<Trajectory> trajectories) throws IOException {
+        BufferedImage img = ImageIO.read(new File(INPUT_FILE_DIR + fileName));
 
         drawTrajectories(img, trajectories);
+        displayImage(img);
+        saveImage(fileName, img);
+    }
 
+    private void displayImage(BufferedImage img) {
         JFrame frame = new JFrame();
         frame.setLayout(new FlowLayout());
         frame.setSize(img.getWidth(), img.getHeight());
+
+        ImageIcon icon = new ImageIcon(img);
 
         JLabel lbl = new JLabel();
         lbl.setIcon(icon);
@@ -50,6 +57,11 @@ public class DisplayImage {
 
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+    }
+
+    private void saveImage(String fileName, BufferedImage img) throws IOException {
+        File output = new File(OUTPUT_IMG_DIR + fileName);
+        ImageIO.write(img, INPUT_IMG_EXTENSION, output);
     }
 
     /**

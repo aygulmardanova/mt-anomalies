@@ -24,10 +24,10 @@ public class JavaMain {
     public static void main(String[] args) throws IOException, TrajectoriesParserException {
 
         for (String input: INPUT_FILE_NAMES) {
-            List<Trajectory> trajectories = parseTrajectories(input + INPUT_FILE_EXTENSION);
+            List<Trajectory> trajectories = parseTrajectories(Utils.getFileName(input));
             clusteringJava = new ClusteringJava(trajectories);
             printInputBorders(trajectories);
-            displayImage(input + INPUT_IMG_EXTENSION, trajectories);
+            displayImage(Utils.getImgFileName(input), trajectories);
 //            for (Trajectory t1 : trajectories) {
 //                for (Trajectory t2 : trajectories) {
 //                    if (t1 != t2) {
@@ -41,14 +41,14 @@ public class JavaMain {
     private static List<Trajectory> parseTrajectories(String fileName) throws IOException, TrajectoriesParserException {
         LOGGER.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
         LOGGER.info("Trajectories parsing from (" + fileName + ") started");
-        List<Trajectory> trajectories = new TrajectoriesParser().parseTxt(FILE_DIR + fileName);
+        List<Trajectory> trajectories = new TrajectoriesParser().parseTxt(INPUT_FILE_DIR + fileName);
         LOGGER.info("Total amount of trajectories: " + trajectories.size());
         return trajectories;
 
     }
 
     private static void displayImage(String fileName, List<Trajectory> trajectories) throws IOException {
-        new DisplayImage().display(FILE_DIR + fileName, trajectories);
+        new DisplayImage().displayAndSave(fileName, trajectories);
     }
 
     private static double calcDist(Trajectory t1, Trajectory t2) {
