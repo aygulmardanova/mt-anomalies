@@ -1,4 +1,4 @@
-package javaclustering;
+package clustering;
 
 import entity.Cluster;
 import entity.Trajectory;
@@ -13,9 +13,9 @@ import java.util.Map;
 import static java.lang.Math.*;
 import static java.util.stream.Collectors.toList;
 
-public class ClusteringJava {
+public class Clustering {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClusteringJava.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(Clustering.class.getName());
 
     /*
      * Stores clusters in a list.
@@ -32,7 +32,7 @@ public class ClusteringJava {
     private int minY;
     private int maxY;
 
-    public ClusteringJava(List<Trajectory> trajectories) {
+    public Clustering(List<Trajectory> trajectories) {
         trajLCSSDistances = new Double[trajectories.size()][trajectories.size()];
         clustLCSSDistances = new Double[trajectories.size()][trajectories.size()];
     }

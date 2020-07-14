@@ -3,7 +3,7 @@ package misc;
 import entity.Trajectory;
 import entity.TrajectoryPoint;
 import exception.TrajectoriesParserException;
-import javaclustering.ClusteringJava;
+import clustering.Clustering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import parsing.TrajectoriesParser;
@@ -19,13 +19,13 @@ public class JavaMain {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(JavaMain.class.getName());
 
-    private static ClusteringJava clusteringJava;
+    private static Clustering clustering;
 
     public static void main(String[] args) throws IOException, TrajectoriesParserException {
 
         for (String input: INPUT_FILE_NAMES) {
             List<Trajectory> trajectories = parseTrajectories(Utils.getFileName(input));
-            clusteringJava = new ClusteringJava(trajectories);
+            clustering = new Clustering(trajectories);
             printInputBorders(trajectories);
             displayImage(Utils.getImgFileName(input), trajectories);
 //            for (Trajectory t1 : trajectories) {
@@ -53,7 +53,7 @@ public class JavaMain {
 
     private static double calcDist(Trajectory t1, Trajectory t2) {
         LOGGER.info("-----");
-        double dist = clusteringJava.calcLCSSDist(t1, t2);
+        double dist = clustering.calcLCSSDist(t1, t2);
 
         if (dist != 1) {
             LOGGER.info("Calculating distance between trajectories: " +
@@ -90,7 +90,7 @@ public class JavaMain {
                                 .mapToInt(TrajectoryPoint::getY)
                                 .max().orElseThrow(NoSuchElementException::new))
                 .max().orElseThrow(NoSuchElementException::new);
-        clusteringJava.setBorders(minX, maxX, minY, maxY);
+        clustering.setBorders(minX, maxX, minY, maxY);
 
         LOGGER.info("borders for X: (" + minX + ", " + maxX + ")");
         LOGGER.info("borders for Y: (" + minY + ", " + maxY + ")");
