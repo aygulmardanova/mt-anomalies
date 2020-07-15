@@ -2,6 +2,7 @@ package visualisation;
 
 import entity.Trajectory;
 import entity.TrajectoryPoint;
+import misc.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,7 @@ public class DisplayImage {
     };
 
     public void displayAndSave(String fileName, java.util.List<Trajectory> trajectories) throws IOException {
-        BufferedImage img = ImageIO.read(new File(INPUT_FILE_DIR + fileName));
+        BufferedImage img = ImageIO.read(new File(Utils.getFileDir(Utils.INPUT_FILE_DIR, fileName)));
 
         drawTrajectories(img, trajectories);
         displayImage(img);
@@ -60,7 +61,7 @@ public class DisplayImage {
     }
 
     private void saveImage(String fileName, BufferedImage img) throws IOException {
-        File output = new File(OUTPUT_IMG_DIR + fileName);
+        File output = new File(Utils.getFileDir(OUTPUT_IMG_DIR, fileName));
         ImageIO.write(img, INPUT_IMG_EXTENSION, output);
     }
 

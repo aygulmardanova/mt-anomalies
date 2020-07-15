@@ -41,7 +41,7 @@ public class JavaMain {
     private static List<Trajectory> parseTrajectories(String fileName) throws IOException, TrajectoriesParserException {
         LOGGER.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
         LOGGER.info("Trajectories parsing from (" + fileName + ") started");
-        List<Trajectory> trajectories = new TrajectoriesParser().parseTxt(INPUT_FILE_DIR + fileName);
+        List<Trajectory> trajectories = new TrajectoriesParser().parseTxt(Utils.getFileDir(Utils.INPUT_FILE_DIR, fileName));
         LOGGER.info("Total amount of trajectories: " + trajectories.size());
         return trajectories;
 
