@@ -1,4 +1,4 @@
-package exception;
+package ru.griat.rcse.exception;
 
 public class TrajectoriesParserException extends Exception {
 

@@ -1,4 +1,4 @@
-package entity;
+package ru.griat.rcse.entity;
 
 import java.util.Objects;
 

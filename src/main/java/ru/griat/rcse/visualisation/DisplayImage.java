@@ -1,8 +1,8 @@
-package visualisation;
+package ru.griat.rcse.visualisation;
 
-import entity.Trajectory;
-import entity.TrajectoryPoint;
-import misc.Utils;
+import ru.griat.rcse.entity.Trajectory;
+import ru.griat.rcse.entity.TrajectoryPoint;
+import ru.griat.rcse.misc.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +13,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import static misc.Utils.*;
+import static ru.griat.rcse.misc.Utils.*;
 
 public class DisplayImage {
 

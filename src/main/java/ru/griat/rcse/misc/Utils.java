@@ -1,4 +1,4 @@
-package misc;
+package ru.griat.rcse.misc;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

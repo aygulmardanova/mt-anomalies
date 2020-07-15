@@ -1,8 +1,8 @@
-package parsing;
+package ru.griat.rcse.parsing;
 
-import entity.Trajectory;
-import entity.TrajectoryPoint;
-import exception.TrajectoriesParserException;
+import ru.griat.rcse.entity.Trajectory;
+import ru.griat.rcse.entity.TrajectoryPoint;
+import ru.griat.rcse.exception.TrajectoriesParserException;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.FileInputStream;
@@ -152,8 +152,8 @@ public class TrajectoriesParser {
 
     private void processTrajectoryPoint() {
         TrajectoryPoint point = new TrajectoryPoint(
-                Integer.valueOf(x.toString().trim()),
-                Integer.valueOf(y.toString().trim())
+                Integer.parseInt(x.toString().trim()),
+                Integer.parseInt(y.toString().trim())
         );
         trajectoryPoints.add(point);
 

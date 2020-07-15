@@ -1,19 +1,20 @@
-package misc;
+package ru.griat.rcse;
 
-import entity.Trajectory;
-import entity.TrajectoryPoint;
-import exception.TrajectoriesParserException;
-import clustering.Clustering;
+import ru.griat.rcse.entity.Trajectory;
+import ru.griat.rcse.entity.TrajectoryPoint;
+import ru.griat.rcse.exception.TrajectoriesParserException;
+import ru.griat.rcse.clustering.Clustering;
+import ru.griat.rcse.misc.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import parsing.TrajectoriesParser;
-import visualisation.DisplayImage;
+import ru.griat.rcse.parsing.TrajectoriesParser;
+import ru.griat.rcse.visualisation.DisplayImage;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import static misc.Utils.*;
+import static ru.griat.rcse.misc.Utils.*;
 
 public class JavaMain {
 
@@ -26,15 +27,15 @@ public class JavaMain {
         for (String input: INPUT_FILE_NAMES) {
             List<Trajectory> trajectories = parseTrajectories(Utils.getFileName(input));
             clustering = new Clustering(trajectories);
-            printInputBorders(trajectories);
-            displayImage(Utils.getImgFileName(input), trajectories);
-//            for (Trajectory t1 : trajectories) {
-//                for (Trajectory t2 : trajectories) {
-//                    if (t1 != t2) {
-//                        calcDist(t1, t2);
-//                    }
-//                }
-//            }
+//            printInputBorders(trajectories);
+//            displayImage(Utils.getImgFileName(input), trajectories);
+            for (Trajectory t1 : trajectories) {
+                for (Trajectory t2 : trajectories) {
+                    if (t1 != t2) {
+                        calcDist(t1, t2);
+                    }
+                }
+            }
         }
     }
 

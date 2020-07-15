@@ -1,8 +1,8 @@
-package clustering;
+package ru.griat.rcse.clustering;
 
-import entity.Cluster;
-import entity.Trajectory;
-import entity.TrajectoryPoint;
+import ru.griat.rcse.entity.Cluster;
+import ru.griat.rcse.entity.Trajectory;
+import ru.griat.rcse.entity.TrajectoryPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
