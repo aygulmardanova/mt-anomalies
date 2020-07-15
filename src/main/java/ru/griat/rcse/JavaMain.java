@@ -60,8 +60,8 @@ public class JavaMain {
             LOGGER.info("Calculating distance between trajectories: " +
                     "\n1) " + t1 + "; " +
                     "\n2) " + t2);
-            LOGGER.info("dist(" + t1.getId() + ", " + t2.getId() + ") = " + dist);
         }
+        LOGGER.info("dist(" + t1.getId() + ", " + t2.getId() + ") = " + dist);
 
         return dist;
     }
