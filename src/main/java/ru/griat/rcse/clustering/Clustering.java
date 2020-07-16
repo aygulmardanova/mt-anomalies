@@ -32,6 +32,10 @@ public class Clustering {
     private int minY;
     private int maxY;
 
+    public Double[][] getTrajLCSSDistances() {
+        return trajLCSSDistances;
+    }
+
     public Clustering(List<Trajectory> trajectories) {
         trajLCSSDistances = new Double[trajectories.size()][trajectories.size()];
         clustLCSSDistances = new Double[trajectories.size()][trajectories.size()];

@@ -10,11 +10,13 @@ public class Utils {
             "src", "main", "resources");
     public static final Path INPUT_FILE_DIR = Paths.get(RESOURCES_PATH.toString(), "input");
     public static final Path OUTPUT_IMG_DIR = Paths.get(RESOURCES_PATH.toString(), "output");
+    public static final Path CSV_DIR = Paths.get(RESOURCES_PATH.toString(), "distances");
 
     public static final String[] INPUT_FILE_NAMES = {"1", "2", "3", "4"};
     public static final String[] INPUT_FILE_NAMES_FIRST = {"1"};
     public static final String INPUT_FILE_EXTENSION = "txt";
     public static final String INPUT_IMG_EXTENSION = "jpg";
+    public static final String CSV_EXTENSION = "csv";
 
     public static String getImgFileName(String name) {
         return name + "." + INPUT_IMG_EXTENSION;
@@ -26,5 +28,10 @@ public class Utils {
 
     public static String getFileDir(Path path, String fileName) {
         return Paths.get(path.toString(), fileName).toString();
+    }
+
+//    fileName = 1 / 2 / 3 / 4
+    public static String getCsvDir(String experimentId, String fileName) {
+        return Paths.get(CSV_DIR.toString(), experimentId, fileName + "." + CSV_EXTENSION).toString();
     }
 }

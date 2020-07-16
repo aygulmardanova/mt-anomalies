@@ -1,5 +1,6 @@
 package ru.griat.rcse;
 
+import ru.griat.rcse.csv.CSVProcessing;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
 import ru.griat.rcse.exception.TrajectoriesParserException;
@@ -13,7 +14,11 @@ import ru.griat.rcse.visualisation.DisplayImage;
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
 import static ru.griat.rcse.misc.Utils.*;
 
 public class JavaMain {
@@ -24,18 +29,23 @@ public class JavaMain {
 
     public static void main(String[] args) throws IOException, TrajectoriesParserException {
 
-        for (String input: INPUT_FILE_NAMES) {
+        for (String input: INPUT_FILE_NAMES_FIRST) {
             List<Trajectory> trajectories = parseTrajectories(Utils.getFileName(input));
             clustering = new Clustering(trajectories);
 //            printInputBorders(trajectories);
 //            displayImage(Utils.getImgFileName(input), trajectories);
+//            List<Integer> ints = IntStream.range(51, 119).boxed().collect(toList());
+//            ints.add(0, 0);
+//            displayImage(Utils.getImgFileName(input), trajectories, ints);
             for (Trajectory t1 : trajectories) {
-                for (Trajectory t2 : trajectories) {
+                for (Trajectory t2 : trajectories.subList(120, trajectories.size() - 1)) {
                     if (t1 != t2) {
                         calcDist(t1, t2);
                     }
                 }
             }
+            Double[][] trajLCSSDistances = clustering.getTrajLCSSDistances();
+            new CSVProcessing().writeCSV(trajLCSSDistances, 0, 0, 0, 148, "exp1", input);
         }
     }
 
@@ -50,6 +60,10 @@ public class JavaMain {
 
     private static void displayImage(String fileName, List<Trajectory> trajectories) throws IOException {
         new DisplayImage().displayAndSave(fileName, trajectories);
+    }
+
+    private static void displayImage(String fileName, List<Trajectory> trajectories, List<Integer> indexes) throws IOException {
+        new DisplayImage().displayAndSave(fileName, indexes.stream().map(trajectories::get).collect(toList()));
     }
 
     private static double calcDist(Trajectory t1, Trajectory t2) {

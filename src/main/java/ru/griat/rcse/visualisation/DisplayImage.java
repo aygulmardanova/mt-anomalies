@@ -19,6 +19,7 @@ public class DisplayImage {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DisplayImage.class.getName());
 
+    private Integer i = 0;
     private static int color = Color.RED.getRGB();
     private static int[] clusterColors = {
             Color.BLACK.getRGB(),
@@ -61,7 +62,7 @@ public class DisplayImage {
     }
 
     private void saveImage(String fileName, BufferedImage img) throws IOException {
-        File output = new File(Utils.getFileDir(OUTPUT_IMG_DIR, fileName));
+        File output = new File(Utils.getFileDir(OUTPUT_IMG_DIR, "res" + fileName));
         ImageIO.write(img, INPUT_IMG_EXTENSION, output);
     }
 
@@ -72,10 +73,19 @@ public class DisplayImage {
      * @param trajectories array of input trajectories
      */
     private void drawTrajectories(BufferedImage img,  java.util.List<Trajectory> trajectories) {
-        trajectories.forEach(t ->
+        trajectories.forEach(t -> {
                 t.getTrajectoryPoints().forEach(tp ->
-                        drawBoldTrajectoryPoint(img, tp))
+                        drawBoldTrajectoryPoint(img, tp));
+                increaseI();
+        }
         );
+    }
+
+    private void increaseI() {
+        if (this.i < clusterColors.length - 1)
+            this.i++;
+        else
+            this.i = 0;
     }
 
     /**
@@ -93,7 +103,7 @@ public class DisplayImage {
 
         for (int i = -1; i < 2; i++) {
             for (int j = -1; j < 2; j++) {
-                img.setRGB(tp.getX() + i, tp.getY() + j, color);
+                img.setRGB(tp.getX() + i, tp.getY() + j, clusterColors[this.i]);
             }
         }
     }
