@@ -12,12 +12,15 @@ public class CSVProcessing {
 
     private final static String CSV_DELIMITER = ";";
 
-    public void writeCSV(Double[][] trajLCSSDistances, int startI, int startJ, int endI, int endJ, String experimentId, String fileName) throws IOException {
-        FileWriter csvWriter = new FileWriter(Utils.getCsvDir(experimentId, fileName));
+    public void writeCSV(Double[][] trajLCSSDistances, int startI, int endI, int startJ, int endJ, String experimentId, String fileName) throws IOException {
+        String csvPath = Utils.getCsvDir(experimentId, fileName);
+        FileWriter csvWriter = new FileWriter(csvPath, true);
 
-        for (int i = startI; i <= endI; i++) {
-            for (int j = startJ; j <= endJ; j++) {
-                csvWriter.append(String.join(CSV_DELIMITER, String.valueOf(i), String.valueOf(j), trajLCSSDistances[i][j]+ "\n"));
+        for (int i = startI; i < endI; i++) {
+            for (int j = startJ; j < endJ; j++) {
+                csvWriter.append(String.join(CSV_DELIMITER,
+                        String.valueOf(i), String.valueOf(j), trajLCSSDistances[i][j] + "\n")
+                );
             }
         }
         csvWriter.flush();

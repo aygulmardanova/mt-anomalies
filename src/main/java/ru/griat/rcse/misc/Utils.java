@@ -1,5 +1,7 @@
 package ru.griat.rcse.misc;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -10,7 +12,7 @@ public class Utils {
             "src", "main", "resources");
     public static final Path INPUT_FILE_DIR = Paths.get(RESOURCES_PATH.toString(), "input");
     public static final Path OUTPUT_IMG_DIR = Paths.get(RESOURCES_PATH.toString(), "output");
-    public static final Path CSV_DIR = Paths.get(RESOURCES_PATH.toString(), "distances");
+    public static final Path CSV_DIR = Paths.get(RESOURCES_PATH.toString(), "csv");
 
     public static final String[] INPUT_FILE_NAMES = {"1", "2", "3", "4"};
     public static final String[] INPUT_FILE_NAMES_FIRST = {"1"};
@@ -31,7 +33,14 @@ public class Utils {
     }
 
 //    fileName = 1 / 2 / 3 / 4
-    public static String getCsvDir(String experimentId, String fileName) {
-        return Paths.get(CSV_DIR.toString(), experimentId, fileName + "." + CSV_EXTENSION).toString();
+    public static String getCsvDir(String experimentId, String fileName) throws IOException {
+        Path csvPath = Paths.get(CSV_DIR.toString(), experimentId);
+        new File(csvPath.toString()).mkdirs();
+
+        csvPath = Paths.get(csvPath.toString(), fileName + "." + CSV_EXTENSION);
+        if (!csvPath.toFile().exists())
+            csvPath.toFile().createNewFile();
+
+        return csvPath.toString();
     }
 }

@@ -1,25 +1,22 @@
 package ru.griat.rcse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.griat.rcse.clustering.Clustering;
 import ru.griat.rcse.csv.CSVProcessing;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
 import ru.griat.rcse.exception.TrajectoriesParserException;
-import ru.griat.rcse.clustering.Clustering;
 import ru.griat.rcse.misc.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.griat.rcse.parsing.TrajectoriesParser;
 import ru.griat.rcse.visualisation.DisplayImage;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static ru.griat.rcse.misc.Utils.*;
+import static ru.griat.rcse.misc.Utils.INPUT_FILE_NAMES_FIRST;
 
 public class JavaMain {
 
@@ -37,15 +34,15 @@ public class JavaMain {
 //            List<Integer> ints = IntStream.range(51, 119).boxed().collect(toList());
 //            ints.add(0, 0);
 //            displayImage(Utils.getImgFileName(input), trajectories, ints);
-            for (Trajectory t1 : trajectories) {
-                for (Trajectory t2 : trajectories.subList(120, trajectories.size() - 1)) {
+            for (Trajectory t1 : trajectories.subList(0, 1)) {
+                for (Trajectory t2 : trajectories.subList(0, 50)) {
                     if (t1 != t2) {
                         calcDist(t1, t2);
                     }
                 }
             }
             Double[][] trajLCSSDistances = clustering.getTrajLCSSDistances();
-            new CSVProcessing().writeCSV(trajLCSSDistances, 0, 0, 0, 148, "exp1", input);
+            new CSVProcessing().writeCSV(trajLCSSDistances, 0, 1, 0, 50, "exp1", input);
         }
     }
 
