@@ -29,7 +29,7 @@ public class JavaMain {
         for (String input: INPUT_FILE_NAMES_FIRST) {
             List<Trajectory> trajectories = parseTrajectories(Utils.getFileName(input));
             clustering = new Clustering(trajectories);
-//            printInputBorders(trajectories);
+            setInputBorders(trajectories);
 //            displayImage(Utils.getImgFileName(input), trajectories);
 //            List<Integer> ints = IntStream.range(51, 119).boxed().collect(toList());
 //            ints.add(0, 0);
@@ -77,7 +77,7 @@ public class JavaMain {
         return dist;
     }
 
-    private static void printInputBorders(List<Trajectory> trajectories) {
+    private static void setInputBorders(List<Trajectory> trajectories) {
         int minX = trajectories.stream()
                 .mapToInt(tr ->
                         tr.getTrajectoryPoints().stream()
@@ -104,8 +104,8 @@ public class JavaMain {
                 .max().orElseThrow(NoSuchElementException::new);
         clustering.setBorders(minX, maxX, minY, maxY);
 
-        LOGGER.info("borders for X: (" + minX + ", " + maxX + ")");
-        LOGGER.info("borders for Y: (" + minY + ", " + maxY + ")");
+//        LOGGER.info("borders for X: (" + minX + ", " + maxX + ")");
+//        LOGGER.info("borders for Y: (" + minY + ", " + maxY + ")");
     }
 
 }
