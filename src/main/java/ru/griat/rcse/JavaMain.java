@@ -34,10 +34,10 @@ public class JavaMain {
 //            List<Integer> ints = IntStream.range(51, 119).boxed().collect(toList());
 //            ints.add(0, 0);
 //            displayImage(Utils.getImgFileName(input), trajectories, ints);
-            int start1 = 0;
-            int end1 = 1;
-            int start2 = 121;
-            int end2 = 200;
+            int start1 = 1;
+            int end1 = 2;
+            int start2 = 2;
+            int end2 = 5;
             for (Trajectory t1 : trajectories.subList(start1, end1)) {
                 for (Trajectory t2 : trajectories.subList(start2, end2)) {
                     if (t1 != t2) {
