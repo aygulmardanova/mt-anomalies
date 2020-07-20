@@ -20,6 +20,9 @@ public class Utils {
     public static final String INPUT_IMG_EXTENSION = "jpg";
     public static final String CSV_EXTENSION = "csv";
 
+//    time between frames in seconds (here 0.01 sec)
+    public static final double INTER_FRAME_TIME = 0.01;
+
     public static String getImgFileName(String name) {
         return name + "." + INPUT_IMG_EXTENSION;
     }

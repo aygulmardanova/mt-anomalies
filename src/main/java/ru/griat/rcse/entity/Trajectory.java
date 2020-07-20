@@ -1,5 +1,7 @@
 package ru.griat.rcse.entity;
 
+import ru.griat.rcse.misc.Utils;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -12,24 +14,30 @@ public class Trajectory implements Cloneable {
 
     private List<TrajectoryPoint> trajectoryPoints;
 
-    public Trajectory() {
-    }
+    private double avgSpeed;
 
-    public Trajectory(List<TrajectoryPoint> trajectoryPoints) {
-        this.trajectoryPoints = trajectoryPoints;
-    }
+    private double avgAcceleration;
 
     public Trajectory(int id, List<TrajectoryPoint> trajectoryPoints) {
         this.id = id;
         this.trajectoryPoints = trajectoryPoints;
+        calcSpeed();
+        calcAcceleration();
     }
+
+    public Trajectory(int id, List<TrajectoryPoint> trajectoryPoints, double avgSpeed, double avgAcceleration) {
+        this.id = id;
+        this.trajectoryPoints = trajectoryPoints;
+        this.avgSpeed = avgSpeed;
+        this.avgAcceleration = avgAcceleration;
+    }
+
     @Override
     public Trajectory clone() {
         List<TrajectoryPoint> tpClone = this.getTrajectoryPoints().stream()
                 .map(TrajectoryPoint::clone).collect(toList());
-        return new Trajectory(this.getId(), tpClone);
+        return new Trajectory(this.getId(), tpClone, this.getAvgSpeed(), this.getAvgAcceleration());
     }
-
 
     public int getId() {
         return id;
@@ -43,12 +51,49 @@ public class Trajectory implements Cloneable {
         this.trajectoryPoints = trajectoryPoints;
     }
 
+    public double getAvgSpeed() {
+        return avgSpeed;
+    }
+
+    public double getAvgAcceleration() {
+        return avgAcceleration;
+    }
+
     public Integer length() {
         return this.trajectoryPoints.size();
     }
 
     public TrajectoryPoint get(int index) {
         return this.trajectoryPoints.get(index);
+    }
+
+    /**
+     * Calculates average speed in 'pixels per sec'
+     * pixels / sec
+     *
+     */
+    public void calcSpeed() {
+        double dist = 0;
+        double time = 0;
+        for (int i = 0; i < this.length() - 1; i++) {
+            dist += get(i).distanceTo(get(i + 1));
+        }
+//        since it is known that 1ms between frames - calc number of frames * inter_frame_time
+        time = (get(length() - 1).getTime() - get(0).getTime()) * Utils.INTER_FRAME_TIME;
+
+        avgSpeed = dist / time;
+    }
+
+    /**
+     * Calculates constant average acceleration in 'pixels^2 per sec' based on first and last speeds
+     * pixels / sec^2
+     *
+     */
+    public void calcAcceleration() {
+        double firstSpeed = get(0).distanceTo(get(1)) / (get(1).getTime() - get(0).getTime()) * Utils.INTER_FRAME_TIME;
+        double lastSpeed = get(length() - 2).distanceTo(get(length() - 1))
+                / (get(length() - 1).getTime() - get(length() - 2).getTime()) * Utils.INTER_FRAME_TIME;
+        avgAcceleration = (firstSpeed + lastSpeed) / 2;
     }
 
     @Override
@@ -67,7 +112,8 @@ public class Trajectory implements Cloneable {
     public String toString() {
         return "Trajectory{" +
                 "id=" + id + ", " +
-                "length=" + trajectoryPoints.size() + ", " +
+                "length=" + length() + ", " +
+                "speed=" + avgSpeed + " (pix per sec), " +
                 "(" +
                 trajectoryPoints.stream()
                         .map(tp -> tp.getX() + ", " + tp.getY())
