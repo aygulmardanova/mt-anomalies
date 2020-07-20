@@ -36,6 +36,10 @@ public class Clustering {
         return trajLCSSDistances;
     }
 
+    public void setTrajLCSSDistances(Double[][] trajLCSSDistances) {
+        this.trajLCSSDistances = trajLCSSDistances;
+    }
+
     public Clustering(List<Trajectory> trajectories) {
         trajLCSSDistances = new Double[trajectories.size()][trajectories.size()];
         clustLCSSDistances = new Double[trajectories.size()][trajectories.size()];
@@ -130,8 +134,8 @@ public class Clustering {
         double epsilonY = getEpsilonY(m, n);
 
         double dist = 1 - calcLCSS(t1, t2, delta, epsilonX, epsilonY) / min(m, n);
-        trajLCSSDistances[t1.getId()][t2.getId()] = dist;
-        clustLCSSDistances[t1.getId()][t2.getId()] = dist;
+//        trajLCSSDistances[t1.getId()][t2.getId()] = dist;
+//        clustLCSSDistances[t1.getId()][t2.getId()] = dist;
         return dist;
     }
 
@@ -162,11 +166,11 @@ public class Clustering {
         else if (abs(t1.get(m - 1).getX() - t2.get(n - 1).getX()) < epsilonX
                 && abs(t1.get(m - 1).getY() - t2.get(n - 1).getY()) < epsilonY
                 && abs(m - n) <= delta) {
-            return 1 + calcLCSS(rest(t1), rest(t2), delta, epsilonX, epsilonY);
+            return 1 + calcLCSS(head(t1), head(t2), delta, epsilonX, epsilonY);
         } else {
             return max(
-                    calcLCSS(rest(t1), t2, delta, epsilonX, epsilonY),
-                    calcLCSS(t1, rest(t2), delta, epsilonX, epsilonY)
+                    calcLCSS(head(t1), t2, delta, epsilonX, epsilonY),
+                    calcLCSS(t1, head(t2), delta, epsilonX, epsilonY)
             );
         }
     }
@@ -177,11 +181,10 @@ public class Clustering {
      * @param t trajectory
      * @return trajectory without last trajectory point
      */
-    private Trajectory rest(Trajectory t) {
-        List<TrajectoryPoint> tpClone = t.getTrajectoryPoints().stream()
-                .map(TrajectoryPoint::clone).collect(toList());
-        tpClone.remove(t.length() - 1);
-        return new Trajectory(t.getId(), tpClone);
+    private Trajectory head(Trajectory t) {
+        Trajectory tClone = t.clone();
+        tClone.getTrajectoryPoints().remove(tClone.length() - 1);
+        return tClone;
     }
 
     /**

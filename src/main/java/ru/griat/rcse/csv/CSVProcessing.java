@@ -35,7 +35,7 @@ public class CSVProcessing {
             BufferedReader csvReader = new BufferedReader(new FileReader(csvPath));
             while ((row = csvReader.readLine()) != null) {
                 String[] data = row.split(CSV_DELIMITER);
-                trajLCSSDistances[Integer.parseInt(data[0])][Integer.parseInt(data[1])] = Double.valueOf(data[2]);
+                trajLCSSDistances[Integer.parseInt(data[0])][Integer.parseInt(data[1])] = !data[2].equals("null") ? Double.valueOf(data[2]) : null;
             }
             csvReader.close();
         }

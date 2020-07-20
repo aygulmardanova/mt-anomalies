@@ -4,8 +4,9 @@ import java.util.List;
 import java.util.Objects;
 
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
-public class Trajectory {
+public class Trajectory implements Cloneable {
 
     private int id;
 
@@ -22,6 +23,13 @@ public class Trajectory {
         this.id = id;
         this.trajectoryPoints = trajectoryPoints;
     }
+    @Override
+    public Trajectory clone() {
+        List<TrajectoryPoint> tpClone = this.getTrajectoryPoints().stream()
+                .map(TrajectoryPoint::clone).collect(toList());
+        return new Trajectory(this.getId(), tpClone);
+    }
+
 
     public int getId() {
         return id;

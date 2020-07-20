@@ -14,6 +14,7 @@ import ru.griat.rcse.visualisation.DisplayImage;
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
 import static ru.griat.rcse.misc.Utils.INPUT_FILE_NAMES_FIRST;
@@ -26,7 +27,7 @@ public class JavaMain {
 
     public static void main(String[] args) throws IOException, TrajectoriesParserException {
 
-        for (String input: INPUT_FILE_NAMES_FIRST) {
+        for (String input : INPUT_FILE_NAMES_FIRST) {
             List<Trajectory> trajectories = parseTrajectories(Utils.getFileName(input));
             clustering = new Clustering(trajectories);
             setInputBorders(trajectories);
@@ -45,8 +46,14 @@ public class JavaMain {
                     }
                 }
             }
-            Double[][] trajLCSSDistances = clustering.getTrajLCSSDistances();
-            new CSVProcessing().writeCSV(trajLCSSDistances, start1, end1, start2, end2, "exp1", input);
+
+            Double[][] trajLCSSDistances = new Double[trajectories.size()][trajectories.size()];
+            new CSVProcessing().readCSV(trajLCSSDistances, "exp1", input);
+//            displayImage(Utils.getImgFileName(input), trajectories, filterTrajWithDistLessThan(trajectories, trajLCSSDistances, 1.0));
+            clustering.setTrajLCSSDistances(trajLCSSDistances);
+
+//            Double[][] trajLCSSDistances = clustering.getTrajLCSSDistances();
+//            new CSVProcessing().writeCSV(trajLCSSDistances, start1, end1, start2, end2, "exp1", input);
         }
     }
 
@@ -110,6 +117,11 @@ public class JavaMain {
 
 //        LOGGER.info("borders for X: (" + minX + ", " + maxX + ")");
 //        LOGGER.info("borders for Y: (" + minY + ", " + maxY + ")");
+    }
+
+    private static List<Integer> filterTrajWithDistLessThan(List<Trajectory> trajectories, Double[][] trajLCSSDistances, Double
+            max) {
+        return IntStream.range(1, trajectories.size()).filter(ind -> trajLCSSDistances[0][ind] < max).boxed().collect(toList());
     }
 
 }
