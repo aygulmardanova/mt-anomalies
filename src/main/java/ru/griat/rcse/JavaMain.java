@@ -32,9 +32,7 @@ public class JavaMain {
             clustering = new Clustering(trajectories);
             setInputBorders(trajectories);
 //            displayImage(Utils.getImgFileName(input), trajectories);
-//            List<Integer> ints = IntStream.range(51, 119).boxed().collect(toList());
-//            ints.add(0, 0);
-//            displayImage(Utils.getImgFileName(input), trajectories, ints);
+
             int start1 = 1;
             int end1 = 2;
             int start2 = 2;
@@ -47,13 +45,14 @@ public class JavaMain {
                 }
             }
 
+//            Double[][] trajLCSSDistances = clustering.getTrajLCSSDistances();
+//            new CSVProcessing().writeCSV(trajLCSSDistances, start1, end1, start2, end2, "exp1", input);
+
             Double[][] trajLCSSDistances = new Double[trajectories.size()][trajectories.size()];
             new CSVProcessing().readCSV(trajLCSSDistances, "exp1", input);
 //            displayImage(Utils.getImgFileName(input), trajectories, filterTrajWithDistLessThan(trajectories, trajLCSSDistances, 1.0));
             clustering.setTrajLCSSDistances(trajLCSSDistances);
 
-//            Double[][] trajLCSSDistances = clustering.getTrajLCSSDistances();
-//            new CSVProcessing().writeCSV(trajLCSSDistances, start1, end1, start2, end2, "exp1", input);
         }
     }
 
