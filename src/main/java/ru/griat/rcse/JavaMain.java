@@ -35,20 +35,21 @@ public class JavaMain {
 //            displayImage(Utils.getImgFileName(input), trajectories, indexes);
             List<Trajectory> finalTrajectories = trajectories;
             trajectories = trajectories.stream().filter(tr -> getIndexesOfTrajWithLengthLessThan(finalTrajectories, 25).contains(tr.getId())).collect(toList());
-//            int start1 = 1;
-//            int end1 = 2;
-//            int start2 = 2;
-//            int end2 = 5;
+            int start1 = 11;
+            int end1 = 13;
+            int start2 = 0;
+            int end2 = 100;
             for (Trajectory t1 : trajectories) {
                 for (Trajectory t2 : trajectories) {
-                    if (t1 != t2) {
+                    if (t1.getId() != t2.getId() && t1.getId() >= start1 && t1.getId() < end1
+                            && t2.getId() >= start2 && t2.getId() < end2) {
                         calcDist(t1, t2);
                     }
                 }
             }
 
             Double[][] trajLCSSDistances = clustering.getTrajLCSSDistances();
-//            new CSVProcessing().writeCSV(trajLCSSDistances, start1, end1, start2, end2, "exp1", input);
+            new CSVProcessing().writeCSV(trajLCSSDistances, start1, end1, start2, end2, "exp1", input);
 
 //            Double[][] trajLCSSDistances = new Double[trajectories.size()][trajectories.size()];
 //            new CSVProcessing().readCSV(trajLCSSDistances, "exp1", input);
