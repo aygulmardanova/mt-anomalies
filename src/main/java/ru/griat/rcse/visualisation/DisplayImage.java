@@ -43,7 +43,7 @@ public class DisplayImage {
 
         drawTrajectories(img, trajectories);
         displayImage(img);
-        saveImage(fileName, img);
+//        saveImage(fileName, img);
     }
 
     private void displayImage(BufferedImage img) {

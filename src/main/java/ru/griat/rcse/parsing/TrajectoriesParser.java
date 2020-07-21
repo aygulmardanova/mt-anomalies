@@ -98,6 +98,10 @@ public class TrajectoriesParser {
         }
     }
 
+    /**
+     * Reads an x and y values from file after meeting '(' and before meeting next ')'
+     *
+     */
     private void readCoordinates(InputStream reader) throws IOException {
         char nextChar = (char) reader.read();
         while (nextChar != ',') {
@@ -124,7 +128,7 @@ public class TrajectoriesParser {
                 increaseClosingSqBracketsCount();
             }
 //            update trajectoryPoint at current index with a timestamp
-            trajectoryPoints.get(indexOfTP).setTime(Integer.valueOf(t.toString().trim()));
+            trajectoryPoints.get(indexOfTP).setTime(Integer.parseInt(t.toString().trim()));
             indexOfTP++;
             t = new StringBuilder();
             nextChar = (char) reader.read();

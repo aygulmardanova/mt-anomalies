@@ -134,8 +134,8 @@ public class Clustering {
         double epsilonY = getEpsilonY(m, n);
 
         double dist = 1 - calcLCSS(t1, t2, delta, epsilonX, epsilonY) / min(m, n);
-//        trajLCSSDistances[t1.getId()][t2.getId()] = dist;
-//        clustLCSSDistances[t1.getId()][t2.getId()] = dist;
+        trajLCSSDistances[t1.getId()][t2.getId()] = dist;
+        clustLCSSDistances[t1.getId()][t2.getId()] = dist;
         return dist;
     }
 

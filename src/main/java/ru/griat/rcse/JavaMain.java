@@ -32,27 +32,30 @@ public class JavaMain {
             clustering = new Clustering(trajectories);
             setInputBorders(trajectories);
 //            displayImage(Utils.getImgFileName(input), trajectories);
-
-            int start1 = 1;
-            int end1 = 2;
-            int start2 = 2;
-            int end2 = 5;
-            for (Trajectory t1 : trajectories.subList(start1, end1)) {
-                for (Trajectory t2 : trajectories.subList(start2, end2)) {
+//            displayImage(Utils.getImgFileName(input), trajectories, indexes);
+            List<Trajectory> finalTrajectories = trajectories;
+            trajectories = trajectories.stream().filter(tr -> getIndexesOfTrajWithLengthLessThan(finalTrajectories, 25).contains(tr.getId())).collect(toList());
+//            int start1 = 1;
+//            int end1 = 2;
+//            int start2 = 2;
+//            int end2 = 5;
+            for (Trajectory t1 : trajectories) {
+                for (Trajectory t2 : trajectories) {
                     if (t1 != t2) {
                         calcDist(t1, t2);
                     }
                 }
             }
 
-//            Double[][] trajLCSSDistances = clustering.getTrajLCSSDistances();
+            Double[][] trajLCSSDistances = clustering.getTrajLCSSDistances();
 //            new CSVProcessing().writeCSV(trajLCSSDistances, start1, end1, start2, end2, "exp1", input);
 
-            Double[][] trajLCSSDistances = new Double[trajectories.size()][trajectories.size()];
-            new CSVProcessing().readCSV(trajLCSSDistances, "exp1", input);
+//            Double[][] trajLCSSDistances = new Double[trajectories.size()][trajectories.size()];
+//            new CSVProcessing().readCSV(trajLCSSDistances, "exp1", input);
 //            displayImage(Utils.getImgFileName(input), trajectories, filterTrajWithDistLessThan(trajectories, trajLCSSDistances, 1.0));
-            clustering.setTrajLCSSDistances(trajLCSSDistances);
+//            clustering.setTrajLCSSDistances(trajLCSSDistances);
 
+            clustering.cluster(trajectories);
         }
     }
 
@@ -70,6 +73,7 @@ public class JavaMain {
     }
 
     private static void displayImage(String fileName, List<Trajectory> trajectories, List<Integer> indexes) throws IOException {
+        indexes.stream().map(ind -> trajectories.get(ind).length()).max(Integer::compareTo);
         new DisplayImage().displayAndSave(fileName, indexes.stream().map(trajectories::get).collect(toList()));
     }
 
@@ -121,6 +125,13 @@ public class JavaMain {
     private static List<Integer> filterTrajWithDistLessThan(List<Trajectory> trajectories, Double[][] trajLCSSDistances, Double
             max) {
         return IntStream.range(1, trajectories.size()).filter(ind -> trajLCSSDistances[0][ind] < max).boxed().collect(toList());
+    }
+
+    private static List<Integer> getIndexesOfTrajWithLengthLessThan(List<Trajectory> trajectories, Integer maxLength) {
+
+        List<Integer> indexes = IntStream.range(0, 100).boxed().filter(ind -> trajectories.get(ind).length() < maxLength).collect(toList());
+
+        return indexes;
     }
 
 }

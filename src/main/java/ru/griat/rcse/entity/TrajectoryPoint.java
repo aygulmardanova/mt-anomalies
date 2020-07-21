@@ -56,6 +56,12 @@ public class TrajectoryPoint implements Cloneable {
         this.time = time;
     }
 
+    /**
+     * Calculates the Euclidean distance between two trajectory points
+     *
+     * @param other     second trajectory point
+     * @return          Euclidean distance between 'this' and 'other' trajectory points
+     */
     public double distanceTo(TrajectoryPoint other) {
         if (this == other) {
             return 0;
