@@ -41,7 +41,7 @@ public class JavaMain {
 //            int end2 = 5;
             for (Trajectory t1 : trajectories) {
                 for (Trajectory t2 : trajectories) {
-                    if (t1 != t2) {
+                    if (t1.getId() != t2.getId()) {
                         calcDist(t1, t2);
                     }
                 }
