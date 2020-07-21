@@ -18,7 +18,8 @@ public class CSVProcessing {
 
         for (int i = startI; i < endI; i++) {
             for (int j = startJ; j < endJ; j++) {
-                csvWriter.append(String.join(CSV_DELIMITER,
+                if (trajLCSSDistances[i][j] != null)
+                    csvWriter.append(String.join(CSV_DELIMITER,
                         String.valueOf(i), String.valueOf(j), trajLCSSDistances[i][j] + "\n")
                 );
             }
