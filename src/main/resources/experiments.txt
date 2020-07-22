@@ -1,4 +1,5 @@
 1.
+all trajectories with length < 15
 epsilonX = 0.1 * (maxX - minX);
 epsilonY = 0.1 * (maxY - minY);
 delta = 0.5 * min(m, n)

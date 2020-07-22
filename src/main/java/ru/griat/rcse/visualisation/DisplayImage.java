@@ -1,10 +1,12 @@
 package ru.griat.rcse.visualisation;
 
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
 import ru.griat.rcse.misc.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -13,7 +15,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import static ru.griat.rcse.misc.Utils.*;
+import static ru.griat.rcse.misc.Utils.INPUT_IMG_EXTENSION;
+import static ru.griat.rcse.misc.Utils.OUTPUT_IMG_DIR;
 
 public class DisplayImage {
 
@@ -22,21 +25,28 @@ public class DisplayImage {
     private Integer i = 0;
     private static int color = Color.RED.getRGB();
     private static int[] clusterColors = {
-            Color.BLACK.getRGB(),
+            Color.YELLOW.getRGB(),
             Color.BLUE.getRGB(),
             Color.CYAN.getRGB(),
-            Color.DARK_GRAY.getRGB(),
-            Color.GRAY.getRGB(),
-            Color.GREEN.getRGB(),
-            Color.LIGHT_GRAY.getRGB(),
-            Color.MAGENTA.getRGB(),
-            Color.ORANGE.getRGB(),
             Color.PINK.getRGB(),
             Color.RED.getRGB(),
+            Color.GREEN.getRGB(),
             Color.WHITE.getRGB(),
-            Color.YELLOW.getRGB(),
-
+            Color.ORANGE.getRGB(),
+            Color.MAGENTA.getRGB(),
+            Color.LIGHT_GRAY.getRGB(),
+            Color.GRAY.getRGB(),
+            Color.BLACK.getRGB(),
+            Color.DARK_GRAY.getRGB(),
     };
+
+    public void displayAndSaveClusters(String fileName, String subDir, java.util.List<Cluster> clusters) throws IOException {
+        BufferedImage img = ImageIO.read(new File(Utils.getFileDir(Utils.INPUT_FILE_DIR, fileName)));
+
+        drawClusters(img, clusters);
+        displayImage(img);
+        saveImage(fileName, subDir, img);
+    }
 
     public void displayAndSave(String fileName, java.util.List<Trajectory> trajectories) throws IOException {
         BufferedImage img = ImageIO.read(new File(Utils.getFileDir(Utils.INPUT_FILE_DIR, fileName)));
@@ -61,24 +71,42 @@ public class DisplayImage {
         frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     }
 
-    private void saveImage(String fileName, BufferedImage img) throws IOException {
-        File output = new File(Utils.getFileDir(OUTPUT_IMG_DIR, "res" + fileName));
+    private void saveImage(String fileName, String subDir, BufferedImage img) throws IOException {
+        File output = new File(Utils.getFileDir(
+                OUTPUT_IMG_DIR,
+                StringUtils.isNotEmpty(subDir) ? subDir + "/res" + fileName : fileName));
         ImageIO.write(img, INPUT_IMG_EXTENSION, output);
     }
 
     /**
      * Draws trajectories on an image
      *
-     * @param img output image to display trajectories
+     * @param img          output image to display trajectories
      * @param trajectories array of input trajectories
      */
-    private void drawTrajectories(BufferedImage img,  java.util.List<Trajectory> trajectories) {
+    private void drawTrajectories(BufferedImage img, java.util.List<Trajectory> trajectories) {
         trajectories.forEach(t -> {
+                    t.getTrajectoryPoints().forEach(tp ->
+                            drawBoldTrajectoryPoint(img, tp));
+                    increaseI();
+                }
+        );
+    }
+
+    /**
+     * Draws trajectories on an image
+     *
+     * @param img      output image to display clustered trajectories
+     * @param clusters array of input clusters
+     */
+    private void drawClusters(BufferedImage img, java.util.List<Cluster> clusters) {
+        clusters.forEach(c -> {
+            c.getTrajectories().forEach(t -> {
                 t.getTrajectoryPoints().forEach(tp ->
                         drawBoldTrajectoryPoint(img, tp));
-                increaseI();
-        }
-        );
+            });
+            increaseI();
+        });
     }
 
     private void increaseI() {
@@ -93,7 +121,7 @@ public class DisplayImage {
      * Pixel takes place of 3*3 surrounding pixels
      *
      * @param img output image to add trajectory point on to
-     * @param tp trajectory point with pixel coordinates
+     * @param tp  trajectory point with pixel coordinates
      */
     private void drawBoldTrajectoryPoint(BufferedImage img, TrajectoryPoint tp) {
         if (tp.getX() + 2 >= img.getWidth() || tp.getY() + 2 >= img.getHeight()) {

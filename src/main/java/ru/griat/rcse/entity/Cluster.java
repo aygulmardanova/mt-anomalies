@@ -3,11 +3,11 @@ package ru.griat.rcse.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.stream.Collectors.joining;
+
 public class Cluster {
 
     private int id;
-
-    private int level;
 
     private List<Trajectory> trajectories;
 
@@ -15,6 +15,12 @@ public class Cluster {
     }
 
     public Cluster(Trajectory trajectory) {
+        this.trajectories = new ArrayList<>();
+        this.trajectories.add(trajectory);
+    }
+
+    public Cluster(int id, Trajectory trajectory) {
+        this.id = id;
         this.trajectories = new ArrayList<>();
         this.trajectories.add(trajectory);
     }
@@ -29,14 +35,6 @@ public class Cluster {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public void setLevel(int level) {
-        this.level = level;
     }
 
     public List<Trajectory> getTrajectories() {
@@ -55,4 +53,12 @@ public class Cluster {
         this.trajectories.addAll(trajectories);
     }
 
+    @Override
+    public String toString() {
+        return "Cluster " + id + ": {" +
+                "trajectories=(" + trajectories.stream()
+                .map(tr -> String.valueOf(tr.getId()))
+                .collect(joining("), (")) +
+                ")}";
+    }
 }

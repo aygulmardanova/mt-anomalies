@@ -1,29 +1,26 @@
 package ru.griat.rcse.clustering;
 
-import ru.griat.rcse.entity.Cluster;
-import ru.griat.rcse.entity.Trajectory;
-import ru.griat.rcse.entity.TrajectoryPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.griat.rcse.entity.Cluster;
+import ru.griat.rcse.entity.Trajectory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static java.lang.Math.*;
-import static java.util.stream.Collectors.toList;
 
 public class Clustering {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Clustering.class.getName());
+    private static final int OUTPUT_CLUSTERS_COUNT = 17;
 
     /*
      * Stores clusters in a list.
      *
      *
      */
-    private List<Map<Integer, Cluster>> clusters = new ArrayList<>();
-    private List<Cluster> clusterIds = new ArrayList<>();
+    private List<Cluster> clusters = new ArrayList<>();
 
     private Double[][] trajLCSSDistances;
     private Double[][] clustLCSSDistances;
@@ -38,6 +35,9 @@ public class Clustering {
 
     public void setTrajLCSSDistances(Double[][] trajLCSSDistances) {
         this.trajLCSSDistances = trajLCSSDistances;
+        for (int i = 0; i < trajLCSSDistances.length; i++) {
+            System.arraycopy(trajLCSSDistances[i], 0, clustLCSSDistances[i], 0, trajLCSSDistances.length);
+        }
     }
 
     public Clustering(List<Trajectory> trajectories) {
@@ -72,48 +72,61 @@ public class Clustering {
      */
     public List<Cluster> cluster(List<Trajectory> trajectories) {
         initClusters(trajectories);
-        whileCluster(10);
-        return clusterIds;
+        whileCluster(OUTPUT_CLUSTERS_COUNT);
+        return clusters;
     }
 
     public void initClusters(List<Trajectory> trajectories) {
 //    initialisation
         trajectories.forEach(trajectory ->
-                clusterIds.add(new Cluster(trajectory)));
+                clusters.add(new Cluster(trajectory.getId(), trajectory)));
     }
 
 
     /**
      * stopPoint - desired number of clusters to stop:
      * if null - stop when 1 cluster is left
-     *      if no joins are possible, stop.
+     * if no joins are possible, stop.
      */
     public void whileCluster(Integer stopPoint) {
         if (stopPoint == null)
             stopPoint = 1;
-        int numOfClusters = clustLCSSDistances.length;
-        double minClustDist = Double.MAX_VALUE;
+        int numOfClusters = clusters.size();
+        int id1;
+        int id2;
+        double minClustDist;
         while (numOfClusters > stopPoint) {
-            List<Integer> ids = clusterIds.stream().map(Cluster::getId).collect(toList());
-            int id1 = -1;
-            int id2 = -1;
-            for (Integer i1: ids) {
-                for (Integer i2: ids) {
-                    if (!i1.equals(i2) && clustLCSSDistances[i1][i2] != null && clustLCSSDistances[i1][i2] < minClustDist) {
-                        minClustDist = clustLCSSDistances[i1][i2];
+            id1 = -1;
+            id2 = -1;
+            minClustDist = Double.MAX_VALUE;
+            for (int i1 = 0; i1 < clusters.size(); i1++) {
+                for (int i2 = i1 + 1; i2 < clusters.size(); i2++) {
+                    if (i1 != i2
+                            && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] != null
+                            && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] < minClustDist) {
+                        minClustDist = clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()];
                         id1 = i1;
                         id2 = i2;
                     }
                 }
             }
 //            join i1 and i2 clusters, add i1 traj-es to cluster i2
-            clusterIds.get(id1).appendTrajectories(clusterIds.get(id2).getTrajectories());
-//            remove i2 from 'clusterIds' and 'clusters'
-            clusterIds.remove(id2);
+            clusters.get(id1).appendTrajectories(clusters.get(id2).getTrajectories());
 //            recalculate D for i1 and i2 lines -> set i2 line all to NULLs
-            
+            recalcClustersDistMatrix(id1, id2);
+
+//            remove i2 from 'clusters'
+            clusters.remove(id2);
 
             numOfClusters--;
+        }
+        printClusters();
+
+    }
+
+    private void printClusters() {
+        for (Cluster cluster: clusters) {
+            LOGGER.info(cluster.toString());
         }
     }
 
@@ -223,11 +236,19 @@ public class Clustering {
     /**
      * At each step calc a distance matrix btwn clusters
      * Merge two clusters with a min dist -> requires an update of the dist matrix
+     * because of the implementation: clusterId1 < clusterId2
      *
-     * @param level which level of hierarchical tree of clusters to work with
+     * @param clusterId1 index of left joined cluster in clusters list (remained cluster)
+     * @param clusterId2 index of right joined cluster in clusters list (removed cluster)
      */
-    private void calcClustersDistMatrix(int level) {
-
+    private void recalcClustersDistMatrix(int clusterId1, int clusterId2) {
+        for (int i = 0; i < clusterId1; i++) {
+            clustLCSSDistances[clusters.get(i).getId()][clusterId1] = calcClustersDist(clusters.get(i), clusters.get(clusterId1));
+        }
+        for (int j = clusterId2; j < clusters.size(); j++) {
+            clustLCSSDistances[clusterId2][clusters.get(j).getId()] = calcClustersDist(clusters.get(clusterId2), clusters.get(j));
+        }
+        clustLCSSDistances[clusters.get(clusterId1).getId()][clusters.get(clusterId2).getId()] = null;
     }
 
     /**

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.griat.rcse.clustering.Clustering;
 import ru.griat.rcse.csv.CSVProcessing;
+import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
 import ru.griat.rcse.exception.TrajectoriesParserException;
@@ -22,6 +23,7 @@ import static ru.griat.rcse.misc.Utils.INPUT_FILE_NAMES_FIRST;
 public class JavaMain {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(JavaMain.class.getName());
+    private static final String EXPERIMENT_ID = "exp1";
 
     private static Clustering clustering;
 
@@ -29,34 +31,40 @@ public class JavaMain {
 
         for (String input : INPUT_FILE_NAMES_FIRST) {
             List<Trajectory> trajectories = parseTrajectories(Utils.getFileName(input));
-            clustering = new Clustering(trajectories);
-            setInputBorders(trajectories);
-//            displayImage(Utils.getImgFileName(input), trajectories);
-//            displayImage(Utils.getImgFileName(input), trajectories, indexes);
-            List<Trajectory> finalTrajectories = trajectories;
-            trajectories = trajectories.stream().filter(tr -> getIndexesOfTrajWithLengthLessThan(finalTrajectories, 25).contains(tr.getId())).collect(toList());
-            int start1 = 11;
-            int end1 = 13;
-            int start2 = 0;
-            int end2 = 100;
+            List<Trajectory> initialTrajectories = trajectories;
+
+            clustering = new Clustering(initialTrajectories);
+            setInputBorders(initialTrajectories);
+            trajectories = initialTrajectories.stream()
+                    .filter(tr ->
+                            getIndexesOfTrajWithLengthLessThan(initialTrajectories, 15).contains(tr.getId()))
+                    .collect(toList());
+//            displayTrajectories(Utils.getImgFileName(input), trajectories);
+
+//            int start1 = 11, end1 = 13, start2 = 0, end2 = 100;
             for (Trajectory t1 : trajectories) {
                 for (Trajectory t2 : trajectories) {
-                    if (t1.getId() != t2.getId() && t1.getId() >= start1 && t1.getId() < end1
-                            && t2.getId() >= start2 && t2.getId() < end2) {
-                        calcDist(t1, t2);
-                    }
+//                    if (t1.getId() != t2.getId() && t1.getId() < t2.getId()) {
+//                        calcDist(t1, t2);
+//                    }
+
+//                    if (t1.getId() != t2.getId() && t1.getId() >= start1 && t1.getId() < end1
+//                            && t2.getId() >= start2 && t2.getId() < end2) {
+//                          calcDist(t1, t2);
+//                    }
                 }
             }
 
-            Double[][] trajLCSSDistances = clustering.getTrajLCSSDistances();
-            new CSVProcessing().writeCSV(trajLCSSDistances, start1, end1, start2, end2, "exp1", input);
+//            Double[][] trajLCSSDistances = clustering.getTrajLCSSDistances();
+//            new CSVProcessing().writeCSV(trajLCSSDistances, 0, 624, 0, 624, EXPERIMENT_ID, input);
 
-//            Double[][] trajLCSSDistances = new Double[trajectories.size()][trajectories.size()];
-//            new CSVProcessing().readCSV(trajLCSSDistances, "exp1", input);
-//            displayImage(Utils.getImgFileName(input), trajectories, filterTrajWithDistLessThan(trajectories, trajLCSSDistances, 1.0));
-//            clustering.setTrajLCSSDistances(trajLCSSDistances);
+            Double[][] trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
+            new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
+//            displayTrajectories(Utils.getImgFileName(input), trajectories, filterTrajWithDistLessThan(trajectories, trajLCSSDistances, 1.0));
+            clustering.setTrajLCSSDistances(trajLCSSDistances);
 
-            clustering.cluster(trajectories);
+            List<Cluster> clusters = clustering.cluster(trajectories);
+            displayClusters(Utils.getImgFileName(input), clusters);
         }
     }
 
@@ -69,12 +77,15 @@ public class JavaMain {
 
     }
 
-    private static void displayImage(String fileName, List<Trajectory> trajectories) throws IOException {
+    private static void displayClusters(String fileName, List<Cluster> clusters) throws IOException {
+        new DisplayImage().displayAndSaveClusters(fileName, "clustering-results/" + EXPERIMENT_ID, clusters);
+    }
+
+    private static void displayTrajectories(String fileName, List<Trajectory> trajectories) throws IOException {
         new DisplayImage().displayAndSave(fileName, trajectories);
     }
 
-    private static void displayImage(String fileName, List<Trajectory> trajectories, List<Integer> indexes) throws IOException {
-        indexes.stream().map(ind -> trajectories.get(ind).length()).max(Integer::compareTo);
+    private static void displayTrajectories(String fileName, List<Trajectory> trajectories, List<Integer> indexes) throws IOException {
         new DisplayImage().displayAndSave(fileName, indexes.stream().map(trajectories::get).collect(toList()));
     }
 
@@ -130,7 +141,7 @@ public class JavaMain {
 
     private static List<Integer> getIndexesOfTrajWithLengthLessThan(List<Trajectory> trajectories, Integer maxLength) {
 
-        List<Integer> indexes = IntStream.range(0, 100).boxed().filter(ind -> trajectories.get(ind).length() < maxLength).collect(toList());
+        List<Integer> indexes = IntStream.range(0, 624).boxed().filter(ind -> trajectories.get(ind).length() < maxLength).collect(toList());
 
         return indexes;
     }
