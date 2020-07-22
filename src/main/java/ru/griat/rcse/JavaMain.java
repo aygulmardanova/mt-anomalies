@@ -32,39 +32,28 @@ public class JavaMain {
         for (String input : INPUT_FILE_NAMES_FIRST) {
             List<Trajectory> trajectories = parseTrajectories(Utils.getFileName(input));
             List<Trajectory> initialTrajectories = trajectories;
+            Double[][] trajLCSSDistances;
 
             clustering = new Clustering(initialTrajectories);
             setInputBorders(initialTrajectories);
-            trajectories = initialTrajectories.stream()
-                    .filter(tr ->
-                            getIndexesOfTrajWithLengthLessThan(initialTrajectories, 15).contains(tr.getId()))
-                    .collect(toList());
-//            displayTrajectories(Utils.getImgFileName(input), trajectories);
+//            trajectories = initialTrajectories.stream()
+//                    .filter(tr ->
+//                            getIndexesOfTrajWithLengthLessThan(initialTrajectories, 15).contains(tr.getId()))
+//                    .collect(toList());
+            displayTrajectories(Utils.getImgFileName(input), trajectories);
 
-//            int start1 = 11, end1 = 13, start2 = 0, end2 = 100;
-            for (Trajectory t1 : trajectories) {
-                for (Trajectory t2 : trajectories) {
-//                    if (t1.getId() != t2.getId() && t1.getId() < t2.getId()) {
-//                        calcDist(t1, t2);
-//                    }
+//            calcDistances(trajectories, 11, 13, 0, 100);
 
-//                    if (t1.getId() != t2.getId() && t1.getId() >= start1 && t1.getId() < end1
-//                            && t2.getId() >= start2 && t2.getId() < end2) {
-//                          calcDist(t1, t2);
-//                    }
-                }
-            }
-
-//            Double[][] trajLCSSDistances = clustering.getTrajLCSSDistances();
+//            trajLCSSDistances = clustering.getTrajLCSSDistances();
 //            new CSVProcessing().writeCSV(trajLCSSDistances, 0, 624, 0, 624, EXPERIMENT_ID, input);
 
-            Double[][] trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
-            new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
+//            trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
+//            new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
+//            clustering.setTrajLCSSDistances(trajLCSSDistances);
 //            displayTrajectories(Utils.getImgFileName(input), trajectories, filterTrajWithDistLessThan(trajectories, trajLCSSDistances, 1.0));
-            clustering.setTrajLCSSDistances(trajLCSSDistances);
 
-            List<Cluster> clusters = clustering.cluster(trajectories);
-            displayClusters(Utils.getImgFileName(input), clusters);
+//            List<Cluster> clusters = clustering.cluster(trajectories);
+//            displayClusters(Utils.getImgFileName(input), clusters);
         }
     }
 
@@ -74,7 +63,21 @@ public class JavaMain {
         List<Trajectory> trajectories = new TrajectoriesParser().parseTxt(Utils.getFileDir(Utils.INPUT_FILE_DIR, fileName));
         LOGGER.info("Total amount of trajectories: " + trajectories.size());
         return trajectories;
+    }
 
+    private static void calcDistances(List<Trajectory> trajectories, int start1, int end1, int start2, int end2) {
+        for (Trajectory t1 : trajectories) {
+            for (Trajectory t2 : trajectories) {
+                if (t1.getId() != t2.getId() && t1.getId() < t2.getId()) {
+                    logCalcDist(t1, t2);
+                }
+
+//                if (t1.getId() != t2.getId() && t1.getId() >= start1 && t1.getId() < end1
+//                        && t2.getId() >= start2 && t2.getId() < end2) {
+//                    calcDist(t1, t2);
+//                }
+            }
+        }
     }
 
     private static void displayClusters(String fileName, List<Cluster> clusters) throws IOException {
@@ -89,7 +92,7 @@ public class JavaMain {
         new DisplayImage().displayAndSave(fileName, indexes.stream().map(trajectories::get).collect(toList()));
     }
 
-    private static double calcDist(Trajectory t1, Trajectory t2) {
+    private static double logCalcDist(Trajectory t1, Trajectory t2) {
         LOGGER.info("-----");
         double dist = clustering.calcLCSSDist(t1, t2);
 
