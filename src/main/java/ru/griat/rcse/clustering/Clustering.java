@@ -82,6 +82,11 @@ public class Clustering {
                 clusters.add(new Cluster(trajectory.getId(), trajectory)));
     }
 
+    private void printClusters() {
+        for (Cluster cluster: clusters) {
+            LOGGER.info(cluster.toString());
+        }
+    }
 
     /**
      * stopPoint - desired number of clusters to stop:
@@ -122,12 +127,6 @@ public class Clustering {
         }
         printClusters();
 
-    }
-
-    private void printClusters() {
-        for (Cluster cluster: clusters) {
-            LOGGER.info(cluster.toString());
-        }
     }
 
     /**

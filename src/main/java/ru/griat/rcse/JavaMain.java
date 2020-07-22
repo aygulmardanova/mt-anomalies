@@ -137,16 +137,19 @@ public class JavaMain {
 //        LOGGER.info("borders for Y: (" + minY + ", " + maxY + ")");
     }
 
-    private static List<Integer> filterTrajWithDistLessThan(List<Trajectory> trajectories, Double[][] trajLCSSDistances, Double
-            max) {
-        return IntStream.range(1, trajectories.size()).filter(ind -> trajLCSSDistances[0][ind] < max).boxed().collect(toList());
+    private static List<Integer> filterTrajWithDistLessThan(List<Trajectory> trajectories, Double[][] trajLCSSDistances,
+                                                            Double max) {
+        return IntStream.range(1, trajectories.size())
+                .filter(ind ->
+                        trajLCSSDistances[0][ind] < max)
+                .boxed().collect(toList());
     }
 
     private static List<Integer> getIndexesOfTrajWithLengthLessThan(List<Trajectory> trajectories, Integer maxLength) {
-
-        List<Integer> indexes = IntStream.range(0, 624).boxed().filter(ind -> trajectories.get(ind).length() < maxLength).collect(toList());
-
-        return indexes;
+        return IntStream.range(0, trajectories.size()).boxed()
+                .filter(ind ->
+                        trajectories.get(ind).length() < maxLength)
+                .collect(toList());
     }
 
 }
