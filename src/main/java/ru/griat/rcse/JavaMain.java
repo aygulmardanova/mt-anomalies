@@ -40,7 +40,7 @@ public class JavaMain {
 //                    .filter(tr ->
 //                            getIndexesOfTrajWithLengthLessThan(initialTrajectories, 15).contains(tr.getId()))
 //                    .collect(toList());
-            displayTrajectories(Utils.getImgFileName(input), trajectories);
+//            displayTrajectories(Utils.getImgFileName(input), trajectories);
 
 //            calcDistances(trajectories, 11, 13, 0, 100);
 

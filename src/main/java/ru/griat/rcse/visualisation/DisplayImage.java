@@ -25,11 +25,11 @@ public class DisplayImage {
     private Integer i = 0;
     private static int color = Color.RED.getRGB();
     private static int[] clusterColors = {
-            Color.YELLOW.getRGB(),
+            Color.RED.getRGB(),
             Color.BLUE.getRGB(),
             Color.CYAN.getRGB(),
             Color.PINK.getRGB(),
-            Color.RED.getRGB(),
+            Color.YELLOW.getRGB(),
             Color.GREEN.getRGB(),
             Color.WHITE.getRGB(),
             Color.ORANGE.getRGB(),
@@ -52,6 +52,14 @@ public class DisplayImage {
         BufferedImage img = ImageIO.read(new File(Utils.getFileDir(Utils.INPUT_FILE_DIR, fileName)));
 
         drawTrajectories(img, trajectories);
+        displayImage(img);
+//        saveImage(fileName, img);
+    }
+
+    public void displayAndSave(String fileName, TrajectoryPoint point) throws IOException {
+        BufferedImage img = ImageIO.read(new File(Utils.getFileDir(Utils.INPUT_FILE_DIR, fileName)));
+
+        drawBoldTrajectoryPoint(img, point);
         displayImage(img);
 //        saveImage(fileName, img);
     }
@@ -129,8 +137,8 @@ public class DisplayImage {
             return;
         }
 
-        for (int i = -1; i < 2; i++) {
-            for (int j = -1; j < 2; j++) {
+        for (int i = -7; i < 8; i++) {
+            for (int j = -7; j < 8; j++) {
                 img.setRGB(tp.getX() + i, tp.getY() + j, clusterColors[this.i]);
             }
         }

@@ -4,7 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
+import ru.griat.rcse.entity.TrajectoryPoint;
+import ru.griat.rcse.misc.Utils;
+import ru.griat.rcse.visualisation.DisplayImage;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +24,7 @@ public class Clustering {
      *
      *
      */
-    private List<Cluster> clusters = new ArrayList<>();
+    private List<Cluster> clusters;
 
     private Double[][] trajLCSSDistances;
     private Double[][] clustLCSSDistances;
@@ -28,6 +32,13 @@ public class Clustering {
     private int maxX;
     private int minY;
     private int maxY;
+    private TrajectoryPoint cameraPoint;
+
+    public Clustering(List<Trajectory> trajectories) {
+        clusters = new ArrayList<>();
+        trajLCSSDistances = new Double[trajectories.size()][trajectories.size()];
+        clustLCSSDistances = new Double[trajectories.size()][trajectories.size()];
+    }
 
     public Double[][] getTrajLCSSDistances() {
         return trajLCSSDistances;
@@ -40,16 +51,17 @@ public class Clustering {
         }
     }
 
-    public Clustering(List<Trajectory> trajectories) {
-        trajLCSSDistances = new Double[trajectories.size()][trajectories.size()];
-        clustLCSSDistances = new Double[trajectories.size()][trajectories.size()];
-    }
-
     public void setBorders(int minX, int maxX, int minY, int maxY) {
         this.minX = minX;
         this.maxX = maxX;
         this.minY = minY;
         this.maxY = maxY;
+        this.cameraPoint = new TrajectoryPoint((int) Math.round(0.25 * maxX), (int) Math.round(0.95 * maxY));
+        try {
+            new DisplayImage().displayAndSave(Utils.getImgFileName("1"), cameraPoint);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
