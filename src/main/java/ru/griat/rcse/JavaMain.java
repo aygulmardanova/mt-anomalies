@@ -66,32 +66,48 @@ public class JavaMain {
         double[] x;
         double[] y;
         int polynomialDegree = 3;
-        PolynomialRegression regressionX;
-        PolynomialRegression regressionY;
+        double thresholdR2 = 0.9;
+        double minR2forX = 1.0;
+        double minR2forY = 1.0;
+        int minXid = -1;
+        int minYid = -1;
 
-        int tId = 101;
-        Trajectory currentTr = trajectories.get(tId);
-        int firstTime = currentTr.getTrajectoryPoints().get(0).getTime();
-        for (TrajectoryPoint tp: currentTr.getTrajectoryPoints()) {
-            tp.setTime(tp.getTime() + 1 - firstTime);
+        for (int tId = 0; tId < trajectories.size(); tId++) {
+            PolynomialRegression regressionX;
+            PolynomialRegression regressionY;
+
+            Trajectory currentTr = trajectories.get(tId);
+            t = currentTr.getTrajectoryPoints().stream().mapToDouble(TrajectoryPoint::getTime).toArray();
+            x = currentTr.getTrajectoryPoints().stream().mapToDouble(TrajectoryPoint::getX).toArray();
+            y = currentTr.getTrajectoryPoints().stream().mapToDouble(TrajectoryPoint::getY).toArray();
+            regressionX = new PolynomialRegression(t, x, polynomialDegree);
+            regressionY = new PolynomialRegression(t, y, polynomialDegree);
+
+            if (regressionX.R2() < thresholdR2)
+                regressionX = new PolynomialRegression(t, x, polynomialDegree + 1);
+            if (regressionY.R2() < thresholdR2)
+                regressionY = new PolynomialRegression(t, y, polynomialDegree + 1);
+
+            currentTr.setRegressionX(regressionX);
+            currentTr.setRegressionY(regressionY);
+
+            if (regressionX.R2() < minR2forX) {
+                minR2forX = regressionX.R2();
+                minXid = tId;
+            }
+            if (regressionY.R2() < minR2forY) {
+                minR2forY = regressionY.R2();
+                minYid = tId;
+            }
+            printRegressionResults(currentTr, regressionX, regressionY, t, x, y, input);
         }
-        t = currentTr.getTrajectoryPoints().stream().mapToDouble(TrajectoryPoint::getTime).toArray();
-        x = currentTr.getTrajectoryPoints().stream().mapToDouble(TrajectoryPoint::getX).toArray();
-        y = currentTr.getTrajectoryPoints().stream().mapToDouble(TrajectoryPoint::getY).toArray();
-        regressionX = new PolynomialRegression(t, x, polynomialDegree);
-        regressionY = new PolynomialRegression(t, y, polynomialDegree);
+        double avgR2forX = trajectories.stream().mapToDouble(tr -> tr.getRegressionX().R2()).average().getAsDouble();
+        double avgR2forY = trajectories.stream().mapToDouble(tr -> tr.getRegressionY().R2()).average().getAsDouble();
 
-        System.out.println("---Model for X---");
-        System.out.println(regressionX);
-        regressionX.printPredictedResults(t, x);
-        System.out.println("---Model for Y---");
-        System.out.println(regressionY);
-        regressionY.printPredictedResults(t, y);
-
-        List<TrajectoryPoint> tpCopy = trajectories.get(tId).getTrajectoryPoints().stream().map(tp ->
-                new TrajectoryPoint((int) Math.round(regressionX.predict(tp.getTime())), (int) Math.round(regressionY.predict(tp.getTime())), tp.getTime())).collect(toList());
-        Trajectory trCopy = new Trajectory(1200, tpCopy);
-        displayRegressionTrajectories(input, List.of(currentTr, trCopy));
+        LOGGER.info("min R2 for X is for trajectory {}: {}", minXid, minR2forX);
+        LOGGER.info("avg R2 for X is: {}", avgR2forX);
+        LOGGER.info("min R2 for Y is for trajectory {}: {}", minYid, minR2forY);
+        LOGGER.info("avg R2 for Y is: {}", avgR2forY);
     }
 
     private static List<Trajectory> parseTrajectories(String fileName) throws IOException, TrajectoriesParserException {
@@ -146,6 +162,27 @@ public class JavaMain {
         LOGGER.info("dist(" + t1.getId() + ", " + t2.getId() + ") = " + dist);
 
         return dist;
+    }
+
+    private static void printRegressionResults(Trajectory currentTr,
+                                               PolynomialRegression regressionX, PolynomialRegression regressionY,
+                                               double[] t, double []x, double[] y,
+                                               String input) throws IOException {
+        System.out.println("---Model for X---");
+        System.out.println(regressionX);
+        regressionX.printPredictedResults(t, x);
+        System.out.println("---Model for Y---");
+        System.out.println(regressionY);
+        regressionY.printPredictedResults(t, y);
+
+        List<TrajectoryPoint> tpCopy = currentTr.getTrajectoryPoints().stream().map(tp ->
+                new TrajectoryPoint(
+                        (int) Math.round(regressionX.predict(tp.getTime())),
+                        (int) Math.round(regressionY.predict(tp.getTime())),
+                        tp.getTime()
+                )).collect(toList());
+        Trajectory trCopy = new Trajectory(currentTr.getId() * 100, tpCopy);
+        displayRegressionTrajectories(input, List.of(currentTr, trCopy));
     }
 
     private static void setInputBorders(List<Trajectory> trajectories) {

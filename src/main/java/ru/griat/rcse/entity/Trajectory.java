@@ -1,5 +1,6 @@
 package ru.griat.rcse.entity;
 
+import ru.griat.rcse.approximation.PolynomialRegression;
 import ru.griat.rcse.misc.Utils;
 
 import java.util.List;
@@ -13,6 +14,9 @@ public class Trajectory implements Cloneable {
     private int id;
 
     private List<TrajectoryPoint> trajectoryPoints;
+
+    private PolynomialRegression regressionX;
+    private PolynomialRegression regressionY;
 
     private double avgSpeed;
 
@@ -57,6 +61,22 @@ public class Trajectory implements Cloneable {
 
     public double getAvgAcceleration() {
         return avgAcceleration;
+    }
+
+    public PolynomialRegression getRegressionX() {
+        return regressionX;
+    }
+
+    public void setRegressionX(PolynomialRegression regressionX) {
+        this.regressionX = regressionX;
+    }
+
+    public PolynomialRegression getRegressionY() {
+        return regressionY;
+    }
+
+    public void setRegressionY(PolynomialRegression regressionY) {
+        this.regressionY = regressionY;
     }
 
     public Integer length() {
