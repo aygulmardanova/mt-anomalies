@@ -13,12 +13,16 @@ Project consists of module:
 **Similarity measure**:
 * Longest Common SubSequence (LCSS) distance
 
+**Trajectories Preprocessing**
 
-#### Versions:
+Due to high complexity and time consumption of LCSS, trajectories need to be preprocessed.
+
+Polynomial Regression used to approximate trajectories with polynomials of 3rd and 4th order.
+
+Implementation of Polynomial Regression by [Robert Sedgewick and Kevin Wayne](https://algs4.cs.princeton.edu/14analysis/PolynomialRegression.java). 
+
+**Versions:**
 * `Maven: 3.3.9`
 
 * `Java: 1.8`
 
-* `Scala: 2.12`
-
-* `Apache Spark: 2.4.3`
