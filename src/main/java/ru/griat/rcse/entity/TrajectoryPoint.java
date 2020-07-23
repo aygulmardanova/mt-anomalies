@@ -6,11 +6,17 @@ public class TrajectoryPoint implements Cloneable {
 
     private int x;
     private int y;
-    private long time;
+    private int time;
 
     public TrajectoryPoint(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+
+    public TrajectoryPoint(int x, int y, int time) {
+        this.x = x;
+        this.y = y;
+        this.time = time;
     }
 
     @Override
@@ -48,11 +54,11 @@ public class TrajectoryPoint implements Cloneable {
         this.y = y;
     }
 
-    public long getTime() {
+    public int getTime() {
         return this.time;
     }
 
-    public void setTime(long time) {
+    public void setTime(int time) {
         this.time = time;
     }
 

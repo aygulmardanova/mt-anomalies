@@ -40,20 +40,22 @@ public class DisplayImage {
             Color.DARK_GRAY.getRGB(),
     };
 
-    public void displayAndSaveClusters(String fileName, String subDir, java.util.List<Cluster> clusters) throws IOException {
-        BufferedImage img = ImageIO.read(new File(Utils.getFileDir(Utils.INPUT_FILE_DIR, fileName)));
+    public void displayAndSaveClusters(String inputFileName, String outputFileName, String subDir,
+                                       java.util.List<Cluster> clusters) throws IOException {
+        BufferedImage img = ImageIO.read(new File(Utils.getFileDir(Utils.INPUT_FILE_DIR, inputFileName)));
 
         drawClusters(img, clusters);
         displayImage(img);
-        saveImage(fileName, subDir, img);
+        saveImage(outputFileName, subDir, img);
     }
 
-    public void displayAndSave(String fileName, java.util.List<Trajectory> trajectories) throws IOException {
-        BufferedImage img = ImageIO.read(new File(Utils.getFileDir(Utils.INPUT_FILE_DIR, fileName)));
+    public void displayAndSave(String inputFileName, String outputFileName, String subDir,
+                               java.util.List<Trajectory> trajectories) throws IOException {
+        BufferedImage img = ImageIO.read(new File(Utils.getFileDir(Utils.INPUT_FILE_DIR, inputFileName)));
 
         drawTrajectories(img, trajectories);
         displayImage(img);
-//        saveImage(fileName, img);
+        saveImage(StringUtils.isNotEmpty(outputFileName) ? outputFileName : inputFileName, subDir, img);
     }
 
     public void displayAndSave(String fileName, TrajectoryPoint point) throws IOException {
@@ -61,7 +63,7 @@ public class DisplayImage {
 
         drawBoldTrajectoryPoint(img, point);
         displayImage(img);
-//        saveImage(fileName, img);
+        saveImage(fileName, null, img);
     }
 
     private void displayImage(BufferedImage img) {
@@ -82,7 +84,7 @@ public class DisplayImage {
     private void saveImage(String fileName, String subDir, BufferedImage img) throws IOException {
         File output = new File(Utils.getFileDir(
                 OUTPUT_IMG_DIR,
-                StringUtils.isNotEmpty(subDir) ? subDir + "/res" + fileName : fileName));
+                StringUtils.isNotEmpty(subDir) ? subDir + "/" + fileName : fileName));
         ImageIO.write(img, INPUT_IMG_EXTENSION, output);
     }
 
@@ -137,8 +139,8 @@ public class DisplayImage {
             return;
         }
 
-        for (int i = -7; i < 8; i++) {
-            for (int j = -7; j < 8; j++) {
+        for (int i = -1; i < 2; i++) {
+            for (int j = -1; j < 2; j++) {
                 img.setRGB(tp.getX() + i, tp.getY() + j, clusterColors[this.i]);
             }
         }

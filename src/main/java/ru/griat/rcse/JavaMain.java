@@ -2,6 +2,7 @@ package ru.griat.rcse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.griat.rcse.approximation.PolynomialRegression;
 import ru.griat.rcse.clustering.Clustering;
 import ru.griat.rcse.csv.CSVProcessing;
 import ru.griat.rcse.entity.Cluster;
@@ -36,6 +37,9 @@ public class JavaMain {
 
             clustering = new Clustering(initialTrajectories);
             setInputBorders(initialTrajectories);
+
+            performRegression(trajectories, input);
+
 //            trajectories = initialTrajectories.stream()
 //                    .filter(tr ->
 //                            getIndexesOfTrajWithLengthLessThan(initialTrajectories, 15).contains(tr.getId()))
@@ -55,6 +59,39 @@ public class JavaMain {
 //            List<Cluster> clusters = clustering.cluster(trajectories);
 //            displayClusters(Utils.getImgFileName(input), clusters);
         }
+    }
+
+    private static void performRegression(List<Trajectory> trajectories, String input) throws IOException {
+        double[] t;
+        double[] x;
+        double[] y;
+        int polynomialDegree = 3;
+        PolynomialRegression regressionX;
+        PolynomialRegression regressionY;
+
+        int tId = 101;
+        Trajectory currentTr = trajectories.get(tId);
+        int firstTime = currentTr.getTrajectoryPoints().get(0).getTime();
+        for (TrajectoryPoint tp: currentTr.getTrajectoryPoints()) {
+            tp.setTime(tp.getTime() + 1 - firstTime);
+        }
+        t = currentTr.getTrajectoryPoints().stream().mapToDouble(TrajectoryPoint::getTime).toArray();
+        x = currentTr.getTrajectoryPoints().stream().mapToDouble(TrajectoryPoint::getX).toArray();
+        y = currentTr.getTrajectoryPoints().stream().mapToDouble(TrajectoryPoint::getY).toArray();
+        regressionX = new PolynomialRegression(t, x, polynomialDegree);
+        regressionY = new PolynomialRegression(t, y, polynomialDegree);
+
+        System.out.println("---Model for X---");
+        System.out.println(regressionX);
+        regressionX.printPredictedResults(t, x);
+        System.out.println("---Model for Y---");
+        System.out.println(regressionY);
+        regressionY.printPredictedResults(t, y);
+
+        List<TrajectoryPoint> tpCopy = trajectories.get(tId).getTrajectoryPoints().stream().map(tp ->
+                new TrajectoryPoint((int) Math.round(regressionX.predict(tp.getTime())), (int) Math.round(regressionY.predict(tp.getTime())), tp.getTime())).collect(toList());
+        Trajectory trCopy = new Trajectory(1200, tpCopy);
+        displayRegressionTrajectories(input, List.of(currentTr, trCopy));
     }
 
     private static List<Trajectory> parseTrajectories(String fileName) throws IOException, TrajectoriesParserException {
@@ -81,15 +118,20 @@ public class JavaMain {
     }
 
     private static void displayClusters(String fileName, List<Cluster> clusters) throws IOException {
-        new DisplayImage().displayAndSaveClusters(fileName, "clustering-results/" + EXPERIMENT_ID, clusters);
+        new DisplayImage().displayAndSaveClusters(fileName, "res" + fileName, "clustering-results/" + EXPERIMENT_ID, clusters);
     }
 
     private static void displayTrajectories(String fileName, List<Trajectory> trajectories) throws IOException {
-        new DisplayImage().displayAndSave(fileName, trajectories);
+        new DisplayImage().displayAndSave(fileName, "", "initial-data", trajectories);
+    }
+
+    private static void displayRegressionTrajectories(String fileName, List<Trajectory> trajectories) throws IOException {
+        new DisplayImage().displayAndSave(Utils.getImgFileName(fileName),
+                Utils.getImgFileName(fileName + "-" + trajectories.get(0).getId()), "regression-results", trajectories);
     }
 
     private static void displayTrajectories(String fileName, List<Trajectory> trajectories, List<Integer> indexes) throws IOException {
-        new DisplayImage().displayAndSave(fileName, indexes.stream().map(trajectories::get).collect(toList()));
+        new DisplayImage().displayAndSave(fileName, null, null, indexes.stream().map(trajectories::get).collect(toList()));
     }
 
     private static double logCalcDist(Trajectory t1, Trajectory t2) {

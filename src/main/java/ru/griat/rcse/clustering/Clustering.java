@@ -57,11 +57,11 @@ public class Clustering {
         this.minY = minY;
         this.maxY = maxY;
         this.cameraPoint = new TrajectoryPoint((int) Math.round(0.25 * maxX), (int) Math.round(0.95 * maxY));
-        try {
-            new DisplayImage().displayAndSave(Utils.getImgFileName("1"), cameraPoint);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            new DisplayImage().displayAndSave(Utils.getImgFileName("1"), cameraPoint);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     /**
