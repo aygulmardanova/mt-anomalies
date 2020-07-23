@@ -118,20 +118,20 @@ public class JavaMain {
     }
 
     private static void displayClusters(String fileName, List<Cluster> clusters) throws IOException {
-        new DisplayImage().displayAndSaveClusters(fileName, "res" + fileName, "clustering-results/" + EXPERIMENT_ID, clusters);
+        new DisplayImage().displayAndSaveClusters(fileName, "res" + fileName, "clustering-results/" + EXPERIMENT_ID, clusters, false);
     }
 
     private static void displayTrajectories(String fileName, List<Trajectory> trajectories) throws IOException {
-        new DisplayImage().displayAndSave(fileName, "", "initial-data", trajectories);
+        new DisplayImage().displayAndSave(fileName, "", "initial-data", trajectories, false);
     }
 
     private static void displayRegressionTrajectories(String fileName, List<Trajectory> trajectories) throws IOException {
         new DisplayImage().displayAndSave(Utils.getImgFileName(fileName),
-                Utils.getImgFileName(fileName + "-" + trajectories.get(0).getId()), "regression-results", trajectories);
+                Utils.getImgFileName(fileName + "-" + trajectories.get(0).getId()), "regression-results", trajectories, false);
     }
 
     private static void displayTrajectories(String fileName, List<Trajectory> trajectories, List<Integer> indexes) throws IOException {
-        new DisplayImage().displayAndSave(fileName, null, null, indexes.stream().map(trajectories::get).collect(toList()));
+        new DisplayImage().displayAndSave(fileName, null, null, indexes.stream().map(trajectories::get).collect(toList()), false);
     }
 
     private static double logCalcDist(Trajectory t1, Trajectory t2) {

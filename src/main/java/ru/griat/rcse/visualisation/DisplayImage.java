@@ -41,29 +41,31 @@ public class DisplayImage {
     };
 
     public void displayAndSaveClusters(String inputFileName, String outputFileName, String subDir,
-                                       java.util.List<Cluster> clusters) throws IOException {
+                                       java.util.List<Cluster> clusters, boolean save) throws IOException {
         BufferedImage img = ImageIO.read(new File(Utils.getFileDir(Utils.INPUT_FILE_DIR, inputFileName)));
 
         drawClusters(img, clusters);
         displayImage(img);
-        saveImage(outputFileName, subDir, img);
+        if (save) saveImage(outputFileName, subDir, img);
     }
 
     public void displayAndSave(String inputFileName, String outputFileName, String subDir,
-                               java.util.List<Trajectory> trajectories) throws IOException {
+                               java.util.List<Trajectory> trajectories, boolean save) throws IOException {
         BufferedImage img = ImageIO.read(new File(Utils.getFileDir(Utils.INPUT_FILE_DIR, inputFileName)));
 
         drawTrajectories(img, trajectories);
         displayImage(img);
-        saveImage(StringUtils.isNotEmpty(outputFileName) ? outputFileName : inputFileName, subDir, img);
+        if (save)
+            saveImage(StringUtils.isNotEmpty(outputFileName) ? outputFileName : inputFileName, subDir, img);
     }
 
-    public void displayAndSave(String fileName, TrajectoryPoint point) throws IOException {
+    public void displayAndSave(String fileName, TrajectoryPoint point, boolean save) throws IOException {
         BufferedImage img = ImageIO.read(new File(Utils.getFileDir(Utils.INPUT_FILE_DIR, fileName)));
 
         drawBoldTrajectoryPoint(img, point);
         displayImage(img);
-        saveImage(fileName, null, img);
+        if (save)
+            saveImage(fileName, null, img);
     }
 
     private void displayImage(BufferedImage img) {
