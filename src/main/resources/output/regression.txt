@@ -1,0 +1,31 @@
+threshold = 0,97
+
+1. degrees: 3, 4, 5
+
+min R2 for X is for trajectory 278: 0.9489409472451196
+avg R2 for X is: 0.9982066808078136
+min R2 for Y is for trajectory 388: 0.864229624376385
+avg R2 for Y is: 0.9949844835505994
+
+avg speed for pol3: 335.10630288580677
+avg speed for pol4: 56.49184518086528
+avg speed for pol5: 193.83498144517685
+
+2. degrees: 3, 4
+
+min R2 for X is for trajectory 603: 0.8974864688426927
+avg R2 for X is: 0.9975152596291477
+min R2 for Y is for trajectory 388: 0.822931276958617
+avg R2 for Y is: 0.9938157330806943
+
+avg speed for pol3: 335.10630288580677
+avg speed for pol4: 84.86033460947397
+
+3. degrees: 3
+
+min R2 for X is for trajectory 205: 0.6600876363771132
+avg R2 for X is: 0.9943639919931283
+min R2 for Y is for trajectory 476: 0.4661733780878513
+avg R2 for Y is: 0.9890060114842908
+
+avg speed for pol3: 312.9226444819449

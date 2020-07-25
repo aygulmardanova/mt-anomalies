@@ -13,6 +13,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <logging.version>1.2.3</logging.version>
         <commons.version>2.6</commons.version>
+        <commons.math.version>3.4.1</commons.math.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -26,7 +27,7 @@
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
+            <version>${commons.version}</version>
         </dependency>
 
         <dependency>
@@ -34,6 +35,13 @@
             <artifactId>commons-io</artifactId>
             <version>${commons.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>${commons.math.version}</version>
+        </dependency>
+
         <!--        STARK        -->
 <!--    stark.jar: $STARK_DIR$/target/scala-2.11/stark.jar    -->
 
