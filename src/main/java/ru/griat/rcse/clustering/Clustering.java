@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
-import ru.griat.rcse.misc.Utils;
 import ru.griat.rcse.visualisation.DisplayImage;
 
 import java.io.IOException;
@@ -13,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Math.*;
+import static ru.griat.rcse.misc.Utils.getImgFileName;
 
 public class Clustering {
 
@@ -58,7 +58,7 @@ public class Clustering {
         this.maxY = maxY;
         this.cameraPoint = new TrajectoryPoint((int) Math.round(0.25 * maxX), (int) Math.round(0.95 * maxY));
 //        try {
-//            new DisplayImage().displayAndSave(Utils.getImgFileName("1"), cameraPoint);
+//            new DisplayImage().displayAndSave(getImgFileName("1"), cameraPoint, false);
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }

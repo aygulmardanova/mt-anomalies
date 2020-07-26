@@ -1,5 +1,7 @@
 package ru.griat.rcse.misc;
 
+import ru.griat.rcse.entity.TrajectoryPoint;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -23,6 +25,11 @@ public class Utils {
 //    time between frames in seconds (here 0.01 sec)
     public static final double INTER_FRAME_TIME = 0.01;
 
+    private static final int IMAGE_MIN_X = 0;
+    private static final int IMAGE_MAX_X = 1280;
+    private static final int IMAGE_MIN_Y = 0;
+    private static final int IMAGE_MAX_Y = 720;
+
     public static String getImgFileName(String name) {
         return name + "." + INPUT_IMG_EXTENSION;
     }
@@ -45,5 +52,10 @@ public class Utils {
             csvPath.toFile().createNewFile();
 
         return csvPath.toString();
+    }
+
+    public static boolean checkTPValidity(TrajectoryPoint tp) {
+        return tp.getX() >= IMAGE_MIN_X && tp.getX() <= IMAGE_MAX_X
+                && tp.getY() >= IMAGE_MIN_Y && tp.getY() <= IMAGE_MIN_Y;
     }
 }

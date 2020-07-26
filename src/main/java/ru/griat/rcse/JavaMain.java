@@ -24,7 +24,11 @@ import java.util.NoSuchElementException;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
+import static ru.griat.rcse.misc.Utils.INPUT_FILE_DIR;
 import static ru.griat.rcse.misc.Utils.INPUT_FILE_NAMES_FIRST;
+import static ru.griat.rcse.misc.Utils.getFileDir;
+import static ru.griat.rcse.misc.Utils.getFileName;
+import static ru.griat.rcse.misc.Utils.getImgFileName;
 
 public class JavaMain {
 
@@ -36,7 +40,7 @@ public class JavaMain {
     public static void main(String[] args) throws IOException, TrajectoriesParserException {
 
         for (String input : INPUT_FILE_NAMES_FIRST) {
-            List<Trajectory> trajectories = parseTrajectories(Utils.getFileName(input));
+            List<Trajectory> trajectories = parseTrajectories(getFileName(input));
             List<Trajectory> initialTrajectories = trajectories;
             Double[][] trajLCSSDistances;
             trajectories.remove(583);
@@ -50,7 +54,7 @@ public class JavaMain {
 //                    .filter(tr ->
 //                            getIndexesOfTrajWithLengthLessThan(initialTrajectories, 15).contains(tr.getId()))
 //                    .collect(toList());
-//            displayTrajectories(Utils.getImgFileName(input), trajectories);
+//            displayTrajectories(getImgFileName(input), trajectories);
 
 //            calcDistances(trajectories, 11, 13, 0, 100);
 
@@ -60,10 +64,10 @@ public class JavaMain {
 //            trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
 //            new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
 //            clustering.setTrajLCSSDistances(trajLCSSDistances);
-//            displayTrajectories(Utils.getImgFileName(input), trajectories, filterTrajWithDistLessThan(trajectories, trajLCSSDistances, 1.0));
+//            displayTrajectories(getImgFileName(input), trajectories, filterTrajWithDistLessThan(trajectories, trajLCSSDistances, 1.0));
 
 //            List<Cluster> clusters = clustering.cluster(trajectories);
-//            displayClusters(Utils.getImgFileName(input), clusters);
+//            displayClusters(getImgFileName(input), clusters);
         }
     }
 
@@ -207,7 +211,7 @@ public class JavaMain {
     private static List<Trajectory> parseTrajectories(String fileName) throws IOException, TrajectoriesParserException {
         LOGGER.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
         LOGGER.info("Trajectories parsing from (" + fileName + ") started");
-        List<Trajectory> trajectories = new TrajectoriesParser().parseTxt(Utils.getFileDir(Utils.INPUT_FILE_DIR, fileName));
+        List<Trajectory> trajectories = new TrajectoriesParser().parseTxt(getFileDir(INPUT_FILE_DIR, fileName));
         LOGGER.info("Total amount of trajectories: " + trajectories.size());
         return trajectories;
     }
@@ -232,8 +236,8 @@ public class JavaMain {
     }
 
     private static void displayRegressionTrajectories(String fileName, String subName, List<Trajectory> trajectories) throws IOException {
-        new DisplayImage().displayAndSave(Utils.getImgFileName(fileName),
-                Utils.getImgFileName(fileName + "-" + subName), "regression-results", trajectories, false);
+        new DisplayImage().displayAndSave(getImgFileName(fileName),
+                getImgFileName(fileName + "-" + subName), "regression-results", trajectories, false);
     }
 
     private static void displayTrajectories(String fileName, List<Trajectory> trajectories, List<Integer> indexes) throws IOException {

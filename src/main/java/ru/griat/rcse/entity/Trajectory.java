@@ -1,7 +1,6 @@
 package ru.griat.rcse.entity;
 
 import ru.griat.rcse.approximation.PolynomialRegression;
-import ru.griat.rcse.misc.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +8,8 @@ import java.util.Objects;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static ru.griat.rcse.misc.Utils.INTER_FRAME_TIME;
+import static ru.griat.rcse.misc.Utils.checkTPValidity;
 
 public class Trajectory implements Cloneable {
 
@@ -93,7 +94,7 @@ public class Trajectory implements Cloneable {
     }
 
     public void addKeyPoint(TrajectoryPoint keyPoint) {
-        if (!keyPoints.contains(keyPoint))
+        if (!keyPoints.contains(keyPoint) && checkTPValidity(keyPoint))
             this.keyPoints.add(keyPoint);
     }
 
@@ -117,7 +118,7 @@ public class Trajectory implements Cloneable {
             dist += get(i).distanceTo(get(i + 1));
         }
 //        since it is known that 1ms between frames - calc number of frames * inter_frame_time
-        time = (get(length() - 1).getTime() - get(0).getTime()) * Utils.INTER_FRAME_TIME;
+        time = (get(length() - 1).getTime() - get(0).getTime()) * INTER_FRAME_TIME;
 
         avgSpeed = dist / time;
     }
@@ -128,9 +129,9 @@ public class Trajectory implements Cloneable {
      *
      */
     public void calcAcceleration() {
-        double firstSpeed = get(0).distanceTo(get(1)) / (get(1).getTime() - get(0).getTime()) * Utils.INTER_FRAME_TIME;
+        double firstSpeed = get(0).distanceTo(get(1)) / (get(1).getTime() - get(0).getTime()) * INTER_FRAME_TIME;
         double lastSpeed = get(length() - 2).distanceTo(get(length() - 1))
-                / (get(length() - 1).getTime() - get(length() - 2).getTime()) * Utils.INTER_FRAME_TIME;
+                / (get(length() - 1).getTime() - get(length() - 2).getTime()) * INTER_FRAME_TIME;
         avgAcceleration = (firstSpeed + lastSpeed) / 2;
     }
 

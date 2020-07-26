@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
-import ru.griat.rcse.misc.Utils;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -15,8 +14,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+import static ru.griat.rcse.misc.Utils.INPUT_FILE_DIR;
 import static ru.griat.rcse.misc.Utils.INPUT_IMG_EXTENSION;
 import static ru.griat.rcse.misc.Utils.OUTPUT_IMG_DIR;
+import static ru.griat.rcse.misc.Utils.getFileDir;
 
 public class DisplayImage {
 
@@ -42,7 +43,7 @@ public class DisplayImage {
 
     public void displayAndSaveClusters(String inputFileName, String outputFileName, String subDir,
                                        java.util.List<Cluster> clusters, boolean save) throws IOException {
-        BufferedImage img = ImageIO.read(new File(Utils.getFileDir(Utils.INPUT_FILE_DIR, inputFileName)));
+        BufferedImage img = ImageIO.read(new File(getFileDir(INPUT_FILE_DIR, inputFileName)));
 
         drawClusters(img, clusters);
         displayImage(img);
@@ -51,7 +52,7 @@ public class DisplayImage {
 
     public void displayAndSave(String inputFileName, String outputFileName, String subDir,
                                java.util.List<Trajectory> trajectories, boolean save) throws IOException {
-        BufferedImage img = ImageIO.read(new File(Utils.getFileDir(Utils.INPUT_FILE_DIR, inputFileName)));
+        BufferedImage img = ImageIO.read(new File(getFileDir(INPUT_FILE_DIR, inputFileName)));
 
         drawTrajectories(img, trajectories);
         displayImage(img);
@@ -60,7 +61,7 @@ public class DisplayImage {
     }
 
     public void displayAndSave(String fileName, TrajectoryPoint point, boolean save) throws IOException {
-        BufferedImage img = ImageIO.read(new File(Utils.getFileDir(Utils.INPUT_FILE_DIR, fileName)));
+        BufferedImage img = ImageIO.read(new File(getFileDir(INPUT_FILE_DIR, fileName)));
 
         drawBoldTrajectoryPoint(img, point);
         displayImage(img);
@@ -84,7 +85,7 @@ public class DisplayImage {
     }
 
     private void saveImage(String fileName, String subDir, BufferedImage img) throws IOException {
-        File output = new File(Utils.getFileDir(
+        File output = new File(getFileDir(
                 OUTPUT_IMG_DIR,
                 StringUtils.isNotEmpty(subDir) ? subDir + "/" + fileName : fileName));
         ImageIO.write(img, INPUT_IMG_EXTENSION, output);
