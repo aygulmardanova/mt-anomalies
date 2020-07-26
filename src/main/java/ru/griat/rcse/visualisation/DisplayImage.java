@@ -103,6 +103,13 @@ public class DisplayImage {
                     increaseI();
                 }
         );
+        this.i = 0;
+        trajectories.forEach(t -> {
+            t.getKeyPoints().forEach(kp -> {
+                drawExtraBoldTrajectoryPoint(img, kp);
+            });
+            increaseI();
+        });
     }
 
     /**
@@ -141,8 +148,21 @@ public class DisplayImage {
             return;
         }
 
-        for (int i = -1; i < 2; i++) {
-            for (int j = -1; j < 2; j++) {
+        for (int i = -1; i < 1; i++) {
+            for (int j = -1; j < 1; j++) {
+                img.setRGB(tp.getX() + i, tp.getY() + j, clusterColors[this.i]);
+            }
+        }
+    }
+
+    private void drawExtraBoldTrajectoryPoint(BufferedImage img, TrajectoryPoint tp) {
+        if (tp.getX() + 3 >= img.getWidth() || tp.getY() + 3 >= img.getHeight()) {
+            drawBoldTrajectoryPoint(img, tp);
+            LOGGER.error("Out of image borders: (" + tp.getX() + ", " + tp.getY() + ")");
+            return;
+        }
+        for (int i = -2; i < 3; i++) {
+            for (int j = -2; j < 3; j++) {
                 img.setRGB(tp.getX() + i, tp.getY() + j, clusterColors[this.i]);
             }
         }

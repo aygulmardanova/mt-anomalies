@@ -1,5 +1,7 @@
 package ru.griat.rcse.approximation;
 
+// https://algs4.cs.princeton.edu/14analysis/PolynomialRegression.java.html
+
 /******************************************************************************
  *  Compilation:  javac -cp .:jama.jar PolynomialRegression.java
  *  Execution:    java  -cp .:jama.jar PolynomialRegression
@@ -13,7 +15,7 @@ package ru.griat.rcse.approximation;
 import Jama.Matrix;
 import Jama.QRDecomposition;
 
-import java.util.function.IntToDoubleFunction;
+import java.util.stream.IntStream;
 
 /**
  *  The {@code PolynomialRegression} class performs a polynomial regression
@@ -163,6 +165,10 @@ public class PolynomialRegression implements Comparable<PolynomialRegression> {
         return y;
     }
 
+    public Polynomial toPolynomial() {
+        return new Polynomial(IntStream.range(0, degree + 1).mapToDouble(this::beta).toArray());
+    }
+
     /**
      * Returns a string representation of the polynomial regression model.
      *
@@ -185,7 +191,7 @@ public class PolynomialRegression implements Comparable<PolynomialRegression> {
             else             s.append(String.format("%.2f %s^%d + ", beta(j), variableName, j));
             j--;
         }
-        s = s.append("  (R^2 = " + String.format("%.7f", R2()) + ")");
+        s = s.append("  (R^2 = " + String.format("%.6f", R2()) + ")");
 
         // replace "+ -2n" with "- 2n"
         return s.toString().replace("+ -", "- ");

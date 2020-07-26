@@ -3,6 +3,7 @@ package ru.griat.rcse.entity;
 import ru.griat.rcse.approximation.PolynomialRegression;
 import ru.griat.rcse.misc.Utils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -18,6 +19,8 @@ public class Trajectory implements Cloneable {
     private PolynomialRegression regressionX;
     private PolynomialRegression regressionY;
 
+    private List<TrajectoryPoint> keyPoints;
+
     private double avgSpeed;
 
     private double avgAcceleration;
@@ -27,6 +30,7 @@ public class Trajectory implements Cloneable {
         this.trajectoryPoints = trajectoryPoints;
         calcSpeed();
         calcAcceleration();
+        this.keyPoints = new ArrayList<>();
     }
 
     public Trajectory(int id, List<TrajectoryPoint> trajectoryPoints, double avgSpeed, double avgAcceleration) {
@@ -34,6 +38,7 @@ public class Trajectory implements Cloneable {
         this.trajectoryPoints = trajectoryPoints;
         this.avgSpeed = avgSpeed;
         this.avgAcceleration = avgAcceleration;
+        this.keyPoints = new ArrayList<>();
     }
 
     @Override
@@ -77,6 +82,19 @@ public class Trajectory implements Cloneable {
 
     public void setRegressionY(PolynomialRegression regressionY) {
         this.regressionY = regressionY;
+    }
+
+    public List<TrajectoryPoint> getKeyPoints() {
+        return keyPoints;
+    }
+
+    public void setKeyPoints(List<TrajectoryPoint> keyPoints) {
+        this.keyPoints = keyPoints;
+    }
+
+    public void addKeyPoint(TrajectoryPoint keyPoint) {
+        if (!keyPoints.contains(keyPoint))
+            this.keyPoints.add(keyPoint);
     }
 
     public Integer length() {

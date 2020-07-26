@@ -1,10 +1,14 @@
 package ru.griat.rcse;
 
+import org.apache.commons.math3.analysis.solvers.BaseAbstractUnivariateSolver;
+import org.apache.commons.math3.analysis.solvers.BisectionSolver;
+import org.apache.commons.math3.analysis.solvers.LaguerreSolver;
+import org.apache.commons.math3.exception.NoBracketingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.griat.rcse.approximation.Polynomial;
 import ru.griat.rcse.approximation.PolynomialRegression;
 import ru.griat.rcse.clustering.Clustering;
-import ru.griat.rcse.csv.CSVProcessing;
 import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
@@ -14,9 +18,9 @@ import ru.griat.rcse.parsing.TrajectoriesParser;
 import ru.griat.rcse.visualisation.DisplayImage;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
@@ -35,6 +39,7 @@ public class JavaMain {
             List<Trajectory> trajectories = parseTrajectories(Utils.getFileName(input));
             List<Trajectory> initialTrajectories = trajectories;
             Double[][] trajLCSSDistances;
+            trajectories.remove(583);
 
             clustering = new Clustering(initialTrajectories);
             setInputBorders(initialTrajectories);
@@ -66,12 +71,11 @@ public class JavaMain {
         double[] t, x, y;
         int minDegree = 3;
         int degreeMargin = 2;
-        double thresholdR2 = 0.97;
+        double thresholdR2 = 0.98;
         double minR2forX = 1.0, minR2forY = 1.0;
         int minR2forXid = -1, minR2forYid = -1;
 
         for (int tId = 0; tId < trajectories.size(); tId++) {
-//        for (int tId = 100; tId < 101; tId++) {
             PolynomialRegression regressionX = null;
             PolynomialRegression regressionY = null;
 
@@ -101,34 +105,103 @@ public class JavaMain {
                 minR2forY = regressionY.R2();
                 minR2forYid = tId;
             }
-            printRegressionResults(currentTr, regressionX, regressionY, t, x, y, input);
+            calculateKeyPoints(currentTr);
+//            printRegressionResults(currentTr, t, x, y, input);
         }
-        double avgR2forX = trajectories.stream().mapToDouble(tr -> tr.getRegressionX().R2()).average().getAsDouble();
-        double avgR2forY = trajectories.stream().mapToDouble(tr -> tr.getRegressionY().R2()).average().getAsDouble();
+//        printStatistics(trajectories, input, minDegree, minR2forX, minR2forY, minR2forXid, minR2forYid);
 
-        LOGGER.info("min R2 for X is for trajectory {}: {}", minR2forXid, minR2forX);
-        LOGGER.info("avg R2 for X is: {}", avgR2forX);
-        LOGGER.info("min R2 for Y is for trajectory {}: {}", minR2forYid, minR2forY);
-        LOGGER.info("avg R2 for Y is: {}", avgR2forY);
+        List<Trajectory> copies = new ArrayList<>();
+        for (Trajectory traj : trajectories) {
+            List<TrajectoryPoint> tpCopy = traj.getTrajectoryPoints().stream().map(tp ->
+                    new TrajectoryPoint(
+                            (int) Math.round(traj.getRegressionX().predict(tp.getTime())),
+                            (int) Math.round(traj.getRegressionY().predict(tp.getTime())),
+                            tp.getTime()
+                    )).collect(toList());
+            Trajectory trCopy = new Trajectory(traj.getId() * 100, tpCopy);
+            trCopy.setRegressionX(traj.getRegressionX());
+            trCopy.setRegressionY(traj.getRegressionY());
+            trCopy.setKeyPoints(traj.getKeyPoints());
+            copies.add(trCopy);
+//            copies.add(traj);
+        }
+        displayRegressionTrajectories(input, null, copies);
+//        displayRegressionTrajectories(input, null, copies.stream().filter(tr -> tr.getRegressionX().degree() == 4 || tr.getRegressionY().degree() == 4).collect(toList()));
 
-        List<Trajectory> trajectoriesPol3 = trajectories.stream()
-                .filter(tr ->
-                        tr.getRegressionX().degree() == minDegree && tr.getRegressionY().degree() == minDegree)
-                .collect(toList());
-        List<Trajectory> trajectoriesPol4 = trajectories.stream()
-                .filter(tr ->
-                        tr.getRegressionX().degree() == minDegree + 1 && tr.getRegressionY().degree() == minDegree + 1
-                                && tr.getRegressionX().degree() < minDegree + 2 && tr.getRegressionY().degree() < minDegree + 2)
-                .collect(toList());
-        displayRegressionTrajectories(input, "pol-3", trajectoriesPol3);
-        displayRegressionTrajectories(input, "pol-4", trajectoriesPol4);
+    }
 
-        System.out.println("avg speed for pol3: " + trajectoriesPol3.stream()
-                .mapToDouble(Trajectory::getAvgSpeed)
-                .average().getAsDouble());
-        System.out.println("avg speed for pol4: " + trajectoriesPol4.stream()
-                .mapToDouble(Trajectory::getAvgSpeed)
-                .average().getAsDouble());
+    private static void calculateKeyPoints(Trajectory currentTr) {
+
+        Polynomial polynomialX = currentTr.getRegressionX().toPolynomial();
+        Polynomial diffX1 = polynomialX.derivative();
+        Polynomial diffX2 = diffX1.derivative();
+
+        Polynomial polynomialY = currentTr.getRegressionY().toPolynomial();
+        Polynomial diffY1 = polynomialY.derivative();
+        Polynomial diffY2 = diffY1.derivative();
+
+//        LaguerreSolver, BisectionSolver,
+        BaseAbstractUnivariateSolver bisectionSolver = new BisectionSolver();
+        BaseAbstractUnivariateSolver laguerreSolver = new LaguerreSolver();
+        for (Polynomial diff : List.of(diffX1, diffX2, diffY1, diffY2)) {
+            Double res1 = null, res2 = null;
+            try {
+                res1 = bisectionSolver.solve(30000, diff,
+                        currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).min().getAsInt(),
+                        currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).max().getAsInt(),
+                        currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).min().getAsInt() + 1
+                );
+                currentTr.addKeyPoint(new TrajectoryPoint(
+                        (int) Math.round(currentTr.getRegressionX().predict(res1)),
+                        (int) Math.round(currentTr.getRegressionY().predict(res1)),
+                        (int) Math.round(res1)));
+
+            } catch (NoBracketingException nbe) {}
+
+            try {
+                res2 = laguerreSolver.solve(30000, diff,
+                        currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).min().getAsInt(),
+                        currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).max().getAsInt(),
+                        currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).min().getAsInt() + 1
+                );
+                if (res1 == null || Math.round(res1) != Math.round(res2)) {
+                    currentTr.addKeyPoint(new TrajectoryPoint(
+                            (int) Math.round(currentTr.getRegressionX().predict(res2)),
+                            (int) Math.round(currentTr.getRegressionY().predict(res2)),
+                            (int) Math.round(res2)));
+                }
+            } catch (Exception e) {}
+        }
+
+        double minX = 1280, maxX = 0, minY = 720, maxY = 0;
+        int tForMinX = 0, tForMaxX = 0, tForMinY = 0, tForMaxY = 0;
+        for (int time : currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).boxed().collect(toList())) {
+            double predictedX = currentTr.getRegressionX().predict(time);
+            double predictedY = currentTr.getRegressionY().predict(time);
+            if (predictedX < minX) {
+                minX = predictedX;
+                tForMinX = time;
+            }
+            if (predictedX > maxX) {
+                maxX = predictedX;
+                tForMaxX = time;
+            }
+            if (predictedY < minY) {
+                minY = predictedY;
+                tForMinY = time;
+            }
+            if (predictedY > maxY) {
+                maxY = predictedY;
+                tForMaxY = time;
+            }
+        }
+
+        for (int tt : List.of(tForMinX, tForMaxX, tForMinY, tForMaxY)) {
+            currentTr.addKeyPoint(new TrajectoryPoint(
+                    (int) Math.round(currentTr.getRegressionX().predict(tt)),
+                    (int) Math.round(currentTr.getRegressionY().predict(tt)),
+                    tt));
+        }
     }
 
     private static List<Trajectory> parseTrajectories(String fileName) throws IOException, TrajectoriesParserException {
@@ -146,10 +219,6 @@ public class JavaMain {
                     logCalcDist(t1, t2);
                 }
 
-//                if (t1.getId() != t2.getId() && t1.getId() >= start1 && t1.getId() < end1
-//                        && t2.getId() >= start2 && t2.getId() < end2) {
-//                    calcDist(t1, t2);
-//                }
             }
         }
     }
@@ -186,33 +255,55 @@ public class JavaMain {
     }
 
     private static void printRegressionResults(Trajectory currentTr,
-                                               PolynomialRegression regressionX, PolynomialRegression regressionY,
                                                double[] t, double[] x, double[] y,
                                                String input) throws IOException {
         System.out.println("---Model for X---");
-        System.out.println(regressionX);
-        regressionX.printPredictedResults(t, x);
+        System.out.println(currentTr.getRegressionX());
         System.out.println("---Model for Y---");
-        System.out.println(regressionY);
-        regressionY.printPredictedResults(t, y);
+        System.out.println(currentTr.getRegressionY());
+    }
 
-        List<TrajectoryPoint> tpCopy = currentTr.getTrajectoryPoints().stream().map(tp ->
-                new TrajectoryPoint(
-                        (int) Math.round(regressionX.predict(tp.getTime())),
-                        (int) Math.round(regressionY.predict(tp.getTime())),
-                        tp.getTime()
-                )).collect(toList());
-//        List<TrajectoryPoint> tpCopy = IntStream
-//                .range(currentTr.getTrajectoryPoints().get(0).getTime(), currentTr.getTrajectoryPoints().get(currentTr.length() - 1).getTime() + 1)
-//                .boxed().mapToDouble(time -> Double.parseDouble(time + "")).boxed()
-//                .map(time -> new TrajectoryPoint(
-//                        (int) Math.round(regressionX.predict(time)),
-//                        (int) Math.round(regressionY.predict(time)),
-//                        (int) Math.round(time)))
+    private static void printStatistics(List<Trajectory> trajectories, String input, int minDegree,
+                                        double minR2forX, double minR2forY,
+                                        int minR2forXid, int minR2forYid) throws IOException {
+        double avgR2forX = trajectories.stream().mapToDouble(tr -> tr.getRegressionX().R2()).average().getAsDouble();
+        double avgR2forY = trajectories.stream().mapToDouble(tr -> tr.getRegressionY().R2()).average().getAsDouble();
+
+        LOGGER.info("min R2 for X is for trajectory {}: {}", minR2forXid, minR2forX);
+        LOGGER.info("avg R2 for X is: {}", avgR2forX);
+        LOGGER.info("min R2 for Y is for trajectory {}: {}", minR2forYid, minR2forY);
+        LOGGER.info("avg R2 for Y is: {}", avgR2forY);
+
+//        List<Trajectory> trajectoriesPol3 = trajectories.stream()
+//                .filter(tr ->
+//                        tr.getRegressionX().degree() == minDegree && tr.getRegressionY().degree() == minDegree)
 //                .collect(toList());
+//        List<Trajectory> trajectoriesPol4 = trajectories.stream()
+//                .filter(tr ->
+//                        tr.getRegressionX().degree() == minDegree + 1 && tr.getRegressionY().degree() == minDegree + 1)
+//                .collect(toList());
+//        displayRegressionTrajectories(input, "pol-3", trajectoriesPol3);
+//        displayRegressionTrajectories(input, "pol-4", trajectoriesPol4);
 
-        Trajectory trCopy = new Trajectory(currentTr.getId() * 100, tpCopy);
-        displayRegressionTrajectories(input, currentTr.getId() + "", List.of(trCopy, currentTr));
+//        System.out.println("min speed for pol3: " + trajectoriesPol3.stream()
+//                .mapToDouble(Trajectory::getAvgSpeed)
+//                .min().getAsDouble());
+//        System.out.println("avg speed for pol3: " + trajectoriesPol3.stream()
+//                .mapToDouble(Trajectory::getAvgSpeed)
+//                .average().getAsDouble());
+//        System.out.println("max speed for pol3: " + trajectoriesPol3.stream()
+//                .mapToDouble(Trajectory::getAvgSpeed)
+//                .max().getAsDouble());
+//
+//        System.out.println("min speed for pol4: " + trajectoriesPol4.stream()
+//                .mapToDouble(Trajectory::getAvgSpeed)
+//                .min().getAsDouble());
+//        System.out.println("avg speed for pol4: " + trajectoriesPol4.stream()
+//                .mapToDouble(Trajectory::getAvgSpeed)
+//                .average().getAsDouble());
+//        System.out.println("max speed for pol4: " + trajectoriesPol4.stream()
+//                .mapToDouble(Trajectory::getAvgSpeed)
+//                .max().getAsDouble());
     }
 
     private static void setInputBorders(List<Trajectory> trajectories) {
