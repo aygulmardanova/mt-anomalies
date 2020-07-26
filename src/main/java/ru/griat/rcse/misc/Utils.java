@@ -56,6 +56,6 @@ public class Utils {
 
     public static boolean checkTPValidity(TrajectoryPoint tp) {
         return tp.getX() >= IMAGE_MIN_X && tp.getX() <= IMAGE_MAX_X
-                && tp.getY() >= IMAGE_MIN_Y && tp.getY() <= IMAGE_MIN_Y;
+                && tp.getY() >= IMAGE_MIN_Y && tp.getY() <= IMAGE_MAX_Y;
     }
 }
