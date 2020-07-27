@@ -109,7 +109,6 @@ public class Trajectory implements Cloneable {
     /**
      * Calculates average speed in 'pixels per sec'
      * pixels / sec
-     *
      */
     public void calcSpeed() {
         double dist = 0;
@@ -126,7 +125,6 @@ public class Trajectory implements Cloneable {
     /**
      * Calculates constant average acceleration in 'pixels^2 per sec' based on first and last speeds
      * pixels / sec^2
-     *
      */
     public void calcAcceleration() {
         double firstSpeed = get(0).distanceTo(get(1)) / (get(1).getTime() - get(0).getTime()) * INTER_FRAME_TIME;

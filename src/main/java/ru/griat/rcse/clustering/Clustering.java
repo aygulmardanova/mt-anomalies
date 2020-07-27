@@ -1,5 +1,6 @@
 package ru.griat.rcse.clustering;
 
+import ch.qos.logback.classic.boolex.IEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.griat.rcse.entity.Cluster;
@@ -9,6 +10,7 @@ import ru.griat.rcse.visualisation.DisplayImage;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static java.lang.Math.*;
@@ -95,7 +97,7 @@ public class Clustering {
     }
 
     private void printClusters() {
-        for (Cluster cluster: clusters) {
+        for (Cluster cluster : clusters) {
             LOGGER.info(cluster.toString());
         }
     }
@@ -138,7 +140,7 @@ public class Clustering {
             numOfClusters--;
         }
         printClusters();
-
+        validateClusters();
     }
 
     /**
@@ -287,5 +289,43 @@ public class Clustering {
 
     }
 
+    private void modelClusters() {
+
+    }
+
+    /**
+     * Dunn's Validity Index (DI) = dist_min / diam_max
+     * diam_max = max intra-cluster distance (maximum distance between two farthermost trajectories)
+     */
+    private void validateClusters() {
+        clusters.forEach(cluster -> cluster.getTrajectories().sort(Comparator.comparing(Trajectory::getId)));
+
+        double minDist = Double.MAX_VALUE;
+        for (int i = 0; i < clusters.size(); i++) {
+            for (int j = i + 1; j < clusters.size(); j++) {
+                if (clustLCSSDistances[clusters.get(i).getId()][clusters.get(j).getId()] < minDist)
+                    minDist = clustLCSSDistances[clusters.get(i).getId()][clusters.get(j).getId()];
+            }
+        }
+
+        double maxDiam = clusters.stream().mapToDouble(cluster -> {
+            double maxDist = 0;
+            for (int i = 0; i < cluster.getTrajectories().size(); i++) {
+                for (int j = i + 1; j < cluster.getTrajectories().size(); j++) {
+                    try {
+                        if (trajLCSSDistances[cluster.getTrajectories().get(i).getId()][cluster.getTrajectories().get(j).getId()] > maxDist)
+                            maxDist = trajLCSSDistances[cluster.getTrajectories().get(i).getId()][cluster.getTrajectories().get(j).getId()];
+                    } catch (NullPointerException npe) {
+                        System.out.println("npe");
+                    }
+                }
+            }
+
+            return maxDist;
+        }).max().getAsDouble();
+
+        double DI = minDist / maxDiam;
+        LOGGER.info(String.format("DI = %.2f", DI));
+    }
 
 }

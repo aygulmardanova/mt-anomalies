@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import ru.griat.rcse.approximation.Polynomial;
 import ru.griat.rcse.approximation.PolynomialRegression;
 import ru.griat.rcse.clustering.Clustering;
+import ru.griat.rcse.csv.CSVProcessing;
 import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
@@ -47,26 +48,26 @@ public class JavaMain {
             clustering = new Clustering(initialTrajectories);
             setInputBorders(initialTrajectories);
 
-            performRegression(trajectories, input);
+//            performRegression(trajectories, input);
 
-//            trajectories = initialTrajectories.stream()
-//                    .filter(tr ->
-//                            getIndexesOfTrajWithLengthLessThan(initialTrajectories, 15).contains(tr.getId()))
-//                    .collect(toList());
-//            displayTrajectories(getImgFileName(input), trajectories);
+            trajectories = initialTrajectories.stream()
+                    .filter(tr ->
+                            getIndexesOfTrajWithLengthLessThan(initialTrajectories, 15).contains(tr.getId()))
+                    .collect(toList());
+            displayTrajectories(getImgFileName(input), trajectories);
 
 //            calcDistances(trajectories, 11, 13, 0, 100);
 
 //            trajLCSSDistances = clustering.getTrajLCSSDistances();
 //            new CSVProcessing().writeCSV(trajLCSSDistances, 0, 624, 0, 624, EXPERIMENT_ID, input);
 
-//            trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
-//            new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
-//            clustering.setTrajLCSSDistances(trajLCSSDistances);
+            trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
+            new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
+            clustering.setTrajLCSSDistances(trajLCSSDistances);
 //            displayTrajectories(getImgFileName(input), trajectories, filterTrajWithDistLessThan(trajectories, trajLCSSDistances, 1.0));
 
-//            List<Cluster> clusters = clustering.cluster(trajectories);
-//            displayClusters(getImgFileName(input), clusters);
+            List<Cluster> clusters = clustering.cluster(trajectories);
+            displayClusters(getImgFileName(input), clusters);
         }
     }
 
