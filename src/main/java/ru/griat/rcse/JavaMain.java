@@ -43,7 +43,6 @@ public class JavaMain {
             List<Trajectory> trajectories = parseTrajectories(getFileName(input));
             List<Trajectory> initialTrajectories = trajectories;
             Double[][] trajLCSSDistances;
-            trajectories.remove(583);
 
             clustering = new Clustering(initialTrajectories);
             setInputBorders(initialTrajectories);
@@ -126,12 +125,11 @@ public class JavaMain {
             trCopy.setRegressionX(traj.getRegressionX());
             trCopy.setRegressionY(traj.getRegressionY());
             trCopy.setKeyPoints(traj.getKeyPoints());
-            copies.add(trCopy);
 //            copies.add(traj);
+            copies.add(trCopy);
         }
         displayRegressionTrajectories(input, null, copies);
-//        displayRegressionTrajectories(input, null, copies.stream().filter(tr -> tr.getRegressionX().degree() == 4 || tr.getRegressionY().degree() == 4).collect(toList()));
-
+//        displayRegressionTrajectories(input, null, copies.stream().filter(tr -> tr.getRegressionX().degree() == 4 && tr.getRegressionY().degree() == 4).collect(toList()));
     }
 
     private static void calculateKeyPoints(Trajectory currentTr) {
@@ -148,33 +146,25 @@ public class JavaMain {
         BaseAbstractUnivariateSolver bisectionSolver = new BisectionSolver();
         BaseAbstractUnivariateSolver laguerreSolver = new LaguerreSolver();
         for (Polynomial diff : List.of(diffX1, diffX2, diffY1, diffY2)) {
+            Double prevRes = null;
+            Double res;
             Double res1 = null, res2 = null;
-            try {
-                res1 = bisectionSolver.solve(30000, diff,
-                        currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).min().getAsInt(),
-                        currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).max().getAsInt(),
-                        currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).min().getAsInt() + 1
-                );
-                currentTr.addKeyPoint(new TrajectoryPoint(
-                        (int) Math.round(currentTr.getRegressionX().predict(res1)),
-                        (int) Math.round(currentTr.getRegressionY().predict(res1)),
-                        (int) Math.round(res1)));
-
-            } catch (NoBracketingException nbe) {}
-
-            try {
-                res2 = laguerreSolver.solve(30000, diff,
-                        currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).min().getAsInt(),
-                        currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).max().getAsInt(),
-                        currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).min().getAsInt() + 1
-                );
-                if (res1 == null || Math.round(res1) != Math.round(res2)) {
-                    currentTr.addKeyPoint(new TrajectoryPoint(
-                            (int) Math.round(currentTr.getRegressionX().predict(res2)),
-                            (int) Math.round(currentTr.getRegressionY().predict(res2)),
-                            (int) Math.round(res2)));
-                }
-            } catch (Exception e) {}
+            for (BaseAbstractUnivariateSolver solver: List.of(bisectionSolver, laguerreSolver)) {
+                try {
+                    res = solver.solve(30000, diff,
+                            currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).min().getAsInt(),
+                            currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).max().getAsInt(),
+                            currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).min().getAsInt() + 1
+                    );
+                    if (prevRes == null || Math.round(prevRes) != Math.round(res)) {
+                        currentTr.addKeyPoint(new TrajectoryPoint(
+                                (int) Math.round(currentTr.getRegressionX().predict(res)),
+                                (int) Math.round(currentTr.getRegressionY().predict(res)),
+                                (int) Math.round(res)));
+                        prevRes = res;
+                    }
+                } catch (NoBracketingException nbe) {}
+            }
         }
 
         double minX = 1280, maxX = 0, minY = 720, maxY = 0;
