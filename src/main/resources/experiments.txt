@@ -21,3 +21,13 @@ DI = 0.67
 
 -----------------------
 3.
+
+
+
+4.
+minLength = 10;
+minTotalDist = 80;
+maxKPCount = 11
+clusters 12
+
+DI = 0.64
