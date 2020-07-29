@@ -125,6 +125,11 @@ public class DisplayImage {
                 t.getTrajectoryPoints().forEach(tp ->
                         drawBoldTrajectoryPoint(img, tp));
             });
+            c.getTrajectories().forEach(t -> {
+                t.getKeyPoints().forEach(kp -> {
+                    drawExtraBoldTrajectoryPoint(img, kp);
+                });
+            });
             increaseI();
         });
     }
