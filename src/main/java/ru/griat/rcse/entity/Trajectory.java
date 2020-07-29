@@ -46,7 +46,11 @@ public class Trajectory implements Cloneable {
     public Trajectory clone() {
         List<TrajectoryPoint> tpClone = this.getTrajectoryPoints().stream()
                 .map(TrajectoryPoint::clone).collect(toList());
-        return new Trajectory(this.getId(), tpClone, this.getAvgSpeed(), this.getAvgAcceleration());
+        List<TrajectoryPoint> kpClone = this.getKeyPoints().stream()
+                .map(TrajectoryPoint::clone).collect(toList());
+        Trajectory tClone = new Trajectory(this.getId(), tpClone, this.getAvgSpeed(), this.getAvgAcceleration());
+        tClone.setKeyPoints(kpClone);
+        return tClone;
     }
 
     public int getId() {
@@ -106,6 +110,9 @@ public class Trajectory implements Cloneable {
         return this.trajectoryPoints.get(index);
     }
 
+    public double totalDist() {
+        return this.get(0).distanceTo(this.get(length() - 1));
+    }
     /**
      * Calculates average speed in 'pixels per sec'
      * pixels / sec
@@ -127,10 +134,10 @@ public class Trajectory implements Cloneable {
      * pixels / sec^2
      */
     public void calcAcceleration() {
-        double firstSpeed = get(0).distanceTo(get(1)) / (get(1).getTime() - get(0).getTime()) * INTER_FRAME_TIME;
+        double firstSpeed = get(0).distanceTo(get(1)) / ((get(1).getTime() - get(0).getTime()) * INTER_FRAME_TIME);
         double lastSpeed = get(length() - 2).distanceTo(get(length() - 1))
-                / (get(length() - 1).getTime() - get(length() - 2).getTime()) * INTER_FRAME_TIME;
-        avgAcceleration = (firstSpeed + lastSpeed) / 2;
+                / ((get(length() - 1).getTime() - get(length() - 2).getTime()) * INTER_FRAME_TIME);
+        avgAcceleration = (firstSpeed + lastSpeed) / ((get(length() - 1).getTime() - get(0).getTime()) * INTER_FRAME_TIME);
     }
 
     @Override

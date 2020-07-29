@@ -14,17 +14,22 @@ import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
 import ru.griat.rcse.exception.TrajectoriesParserException;
-import ru.griat.rcse.misc.Utils;
 import ru.griat.rcse.parsing.TrajectoriesParser;
 import ru.griat.rcse.visualisation.DisplayImage;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
+import static ru.griat.rcse.misc.Utils.IMAGE_MAX_X;
+import static ru.griat.rcse.misc.Utils.IMAGE_MAX_Y;
+import static ru.griat.rcse.misc.Utils.IMAGE_MIN_X;
+import static ru.griat.rcse.misc.Utils.IMAGE_MIN_Y;
 import static ru.griat.rcse.misc.Utils.INPUT_FILE_DIR;
 import static ru.griat.rcse.misc.Utils.INPUT_FILE_NAMES_FIRST;
 import static ru.griat.rcse.misc.Utils.getFileDir;
@@ -34,7 +39,7 @@ import static ru.griat.rcse.misc.Utils.getImgFileName;
 public class JavaMain {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(JavaMain.class.getName());
-    private static final String EXPERIMENT_ID = "exp1";
+    private static final String EXPERIMENT_ID = "exp2";
 
     private static Clustering clustering;
 
@@ -44,30 +49,45 @@ public class JavaMain {
             List<Trajectory> trajectories = parseTrajectories(getFileName(input));
             List<Trajectory> initialTrajectories = trajectories;
             Double[][] trajLCSSDistances;
+//            displayTrajectories(getImgFileName(input), trajectories);
 
+            int minLength = 10;
+            int minTotalDist = 80;
+//            displayTrajectories(getImgFileName(input), trajectories.stream().filter(tr -> tr.length() <= minLength || tr.totalDist() < minTotalDist).collect(toList()));
+
+            trajectories = trajectories.stream().filter(tr -> tr.length() > minLength && tr.totalDist() >= minTotalDist).collect(toList());
+
+//            int st = 269;
+//            trajectories = trajectories.subList(st, st + 1);
+//            displayTrajectories(getImgFileName(input), trajectories);
             clustering = new Clustering(initialTrajectories);
             setInputBorders(initialTrajectories);
+//            displayTrajectories(getImgFileName(input), trajectories);
 
-//            performRegression(trajectories, input);
-
-            trajectories = initialTrajectories.stream()
-                    .filter(tr ->
-                            getIndexesOfTrajWithLengthLessThan(initialTrajectories, 15).contains(tr.getId()))
-                    .collect(toList());
+//            displayTrajectories(getImgFileName(input), trajectories.subList(150, 152));
+            performRegression(trajectories, input);
             displayTrajectories(getImgFileName(input), trajectories);
 
-//            calcDistances(trajectories, 11, 13, 0, 100);
+//            trajectories = initialTrajectories.stream()
+//                    .filter(tr ->
+//                            getIndexesOfTrajWithLengthLessThan(initialTrajectories, 15).contains(tr.getId()))
+//                    .collect(toList());
+//            displayTrajectories(getImgFileName(input), trajectories);
+
+            calcDistances(trajectories, 0, 0, 0, 0);
 
 //            trajLCSSDistances = clustering.getTrajLCSSDistances();
-//            new CSVProcessing().writeCSV(trajLCSSDistances, 0, 624, 0, 624, EXPERIMENT_ID, input);
+//            new CSVProcessing().writeCSV(trajLCSSDistances, 0, trajectories.size(), 0, trajectories.size(), EXPERIMENT_ID, input);
 
-            trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
-            new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
-            clustering.setTrajLCSSDistances(trajLCSSDistances);
+//            trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
+//            new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
+//            clustering.setTrajLCSSDistances(trajLCSSDistances);
 //            displayTrajectories(getImgFileName(input), trajectories, filterTrajWithDistLessThan(trajectories, trajLCSSDistances, 1.0));
 
             List<Cluster> clusters = clustering.cluster(trajectories);
-            displayClusters(getImgFileName(input), clusters);
+//            int clSt = 0;
+//            displayClusters(getImgFileName(input), clusters.subList(clSt, clSt + 1), false);
+            displayClusters(getImgFileName(input), clusters, false);
         }
     }
 
@@ -112,28 +132,37 @@ public class JavaMain {
             calculateKeyPoints(currentTr);
 //            printRegressionResults(currentTr, t, x, y, input);
         }
-//        printStatistics(trajectories, input, minDegree, minR2forX, minR2forY, minR2forXid, minR2forYid);
+        printStatistics(trajectories, input, minDegree, minR2forX, minR2forY, minR2forXid, minR2forYid);
 
-        List<Trajectory> copies = new ArrayList<>();
-        for (Trajectory traj : trajectories) {
-            List<TrajectoryPoint> tpCopy = traj.getTrajectoryPoints().stream().map(tp ->
-                    new TrajectoryPoint(
-                            (int) Math.round(traj.getRegressionX().predict(tp.getTime())),
-                            (int) Math.round(traj.getRegressionY().predict(tp.getTime())),
-                            tp.getTime()
-                    )).collect(toList());
-            Trajectory trCopy = new Trajectory(traj.getId() * 100, tpCopy);
-            trCopy.setRegressionX(traj.getRegressionX());
-            trCopy.setRegressionY(traj.getRegressionY());
-            trCopy.setKeyPoints(traj.getKeyPoints());
+//        List<Trajectory> copies = new ArrayList<>();
+//        for (Trajectory traj : trajectories) {
+//            List<TrajectoryPoint> tpCopy = traj.getTrajectoryPoints().stream().map(tp ->
+//                    new TrajectoryPoint(
+//                            (int) Math.round(traj.getRegressionX().predict(tp.getTime())),
+//                            (int) Math.round(traj.getRegressionY().predict(tp.getTime())),
+//                            tp.getTime()
+//                    )).collect(toList());
+//            Trajectory trCopy = new Trajectory(traj.getId() * 100, tpCopy);
+//            trCopy.setRegressionX(traj.getRegressionX());
+//            trCopy.setRegressionY(traj.getRegressionY());
+////            trCopy.setKeyPoints(traj.getKeyPoints());
 //            copies.add(traj);
-            copies.add(trCopy);
-        }
-        displayRegressionTrajectories(input, null, copies);
+//            copies.add(trCopy);
+//        }
+//        displayRegressionTrajectories(input, null, trajectories);
+//        displayRegressionTrajectories(input, null, trajectories.stream().filter(tr -> List.of(300, 575, 2).contains(tr.getId())).collect(toList()));
 //        displayRegressionTrajectories(input, null, copies.stream().filter(tr -> tr.getRegressionX().degree() == 4 && tr.getRegressionY().degree() == 4).collect(toList()));
+//        System.out.println(trajectories.stream().filter(tr -> tr.getKeyPoints().size() == 3).collect(toList()).size());
+        System.out.println(trajectories.stream().mapToInt(tr -> tr.getKeyPoints().size()).min());
+        System.out.println(trajectories.stream().mapToInt(tr -> tr.getKeyPoints().size()).max());
     }
 
     private static void calculateKeyPoints(Trajectory currentTr) {
+        int maxKPCount = 11;
+        if (currentTr.length() < maxKPCount) {
+            currentTr.setKeyPoints(currentTr.getTrajectoryPoints().stream().map(TrajectoryPoint::clone).collect(toList()));
+            return;
+        }
 
         Polynomial polynomialX = currentTr.getRegressionX().toPolynomial();
         Polynomial diffX1 = polynomialX.derivative();
@@ -150,13 +179,14 @@ public class JavaMain {
             Double prevRes = null;
             Double res;
             Double res1 = null, res2 = null;
-            for (BaseAbstractUnivariateSolver solver: List.of(bisectionSolver, laguerreSolver)) {
+            for (BaseAbstractUnivariateSolver solver : List.of(bisectionSolver, laguerreSolver)) {
                 try {
                     res = solver.solve(30000, diff,
                             currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).min().getAsInt(),
                             currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).max().getAsInt(),
                             currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).min().getAsInt() + 1
                     );
+//                    add key points, which are solutions of derivative equations
                     if (prevRes == null || Math.round(prevRes) != Math.round(res)) {
                         currentTr.addKeyPoint(new TrajectoryPoint(
                                 (int) Math.round(currentTr.getRegressionX().predict(res)),
@@ -164,11 +194,12 @@ public class JavaMain {
                                 (int) Math.round(res)));
                         prevRes = res;
                     }
-                } catch (NoBracketingException nbe) {}
+                } catch (NoBracketingException nbe) {
+                }
             }
         }
 
-        double minX = 1280, maxX = 0, minY = 720, maxY = 0;
+        double minX = IMAGE_MAX_X, maxX = IMAGE_MIN_X, minY = IMAGE_MAX_Y, maxY = IMAGE_MIN_Y;
         int tForMinX = 0, tForMaxX = 0, tForMinY = 0, tForMaxY = 0;
         for (int time : currentTr.getTrajectoryPoints().stream().mapToInt(TrajectoryPoint::getTime).boxed().collect(toList())) {
             double predictedX = currentTr.getRegressionX().predict(time);
@@ -191,11 +222,42 @@ public class JavaMain {
             }
         }
 
+//        add border key points
         for (int tt : List.of(tForMinX, tForMaxX, tForMinY, tForMaxY)) {
             currentTr.addKeyPoint(new TrajectoryPoint(
                     (int) Math.round(currentTr.getRegressionX().predict(tt)),
                     (int) Math.round(currentTr.getRegressionY().predict(tt)),
                     tt));
+        }
+
+        int timeStep = 5;
+        int stTime = currentTr.get(0).getTime();
+        int endTime = currentTr.get(currentTr.length() - 1).getTime();
+//            add first point
+        if (currentTr.getKeyPoints().stream().noneMatch(kp -> kp.getTime() < currentTr.get(2).getTime()))
+            currentTr.addKeyPoint(new TrajectoryPoint(
+                    (int) Math.round(currentTr.getRegressionX().predict(stTime)),
+                    (int) Math.round(currentTr.getRegressionY().predict(stTime)),
+                    stTime));
+//            add last point
+        if (currentTr.getKeyPoints().stream().noneMatch(kp -> endTime - kp.getTime() < 2 * timeStep))
+            currentTr.addKeyPoint(new TrajectoryPoint(
+                    (int) Math.round(currentTr.getRegressionX().predict(endTime)),
+                    (int) Math.round(currentTr.getRegressionY().predict(endTime)),
+                    endTime));
+
+//        if small amount of trajectory points
+//        and trajectory length is more than 2 times bigger than amount of key points:
+        if (currentTr.getKeyPoints().size() < maxKPCount && currentTr.length() >= currentTr.getKeyPoints().size()) {
+            int diff = maxKPCount - currentTr.getKeyPoints().size();
+            double interval = (currentTr.length() - 3) * 1.0 / diff;
+            for (int i = 0; i < diff; i++) {
+                int tt = currentTr.get((int) Math.round(1 + interval * i)).getTime();
+                currentTr.addKeyPoint(new TrajectoryPoint(
+                        (int) Math.round(currentTr.getRegressionX().predict(tt)),
+                        (int) Math.round(currentTr.getRegressionY().predict(tt)),
+                        tt));
+            }
         }
     }
 
@@ -218,8 +280,8 @@ public class JavaMain {
         }
     }
 
-    private static void displayClusters(String fileName, List<Cluster> clusters) throws IOException {
-        new DisplayImage().displayAndSaveClusters(fileName, "res" + fileName, "clustering-results/" + EXPERIMENT_ID, clusters, false);
+    private static void displayClusters(String fileName, List<Cluster> clusters, boolean save) throws IOException {
+        new DisplayImage().displayAndSaveClusters(fileName, "res" + fileName, "clustering-results/" + EXPERIMENT_ID, clusters, save);
     }
 
     private static void displayTrajectories(String fileName, List<Trajectory> trajectories) throws IOException {
@@ -264,19 +326,19 @@ public class JavaMain {
         double avgR2forX = trajectories.stream().mapToDouble(tr -> tr.getRegressionX().R2()).average().getAsDouble();
         double avgR2forY = trajectories.stream().mapToDouble(tr -> tr.getRegressionY().R2()).average().getAsDouble();
 
-        LOGGER.info("min R2 for X is for trajectory {}: {}", minR2forXid, minR2forX);
+        LOGGER.info("min R2 for X is: {}", minR2forX);
         LOGGER.info("avg R2 for X is: {}", avgR2forX);
-        LOGGER.info("min R2 for Y is for trajectory {}: {}", minR2forYid, minR2forY);
+        LOGGER.info("min R2 for Y is: {}", minR2forY);
         LOGGER.info("avg R2 for Y is: {}", avgR2forY);
 
-//        List<Trajectory> trajectoriesPol3 = trajectories.stream()
-//                .filter(tr ->
-//                        tr.getRegressionX().degree() == minDegree && tr.getRegressionY().degree() == minDegree)
-//                .collect(toList());
-//        List<Trajectory> trajectoriesPol4 = trajectories.stream()
-//                .filter(tr ->
-//                        tr.getRegressionX().degree() == minDegree + 1 && tr.getRegressionY().degree() == minDegree + 1)
-//                .collect(toList());
+        List<Trajectory> trajectoriesPol3 = trajectories.stream()
+                .filter(tr ->
+                        tr.getRegressionX().degree() == minDegree && tr.getRegressionY().degree() == minDegree)
+                .collect(toList());
+        List<Trajectory> trajectoriesPol4 = trajectories.stream()
+                .filter(tr ->
+                        tr.getRegressionX().degree() == minDegree + 1 || tr.getRegressionY().degree() == minDegree + 1)
+                .collect(toList());
 //        displayRegressionTrajectories(input, "pol-3", trajectoriesPol3);
 //        displayRegressionTrajectories(input, "pol-4", trajectoriesPol4);
 
@@ -298,6 +360,26 @@ public class JavaMain {
 //                .average().getAsDouble());
 //        System.out.println("max speed for pol4: " + trajectoriesPol4.stream()
 //                .mapToDouble(Trajectory::getAvgSpeed)
+//                .max().getAsDouble());
+//
+//        System.out.println("min accel for pol3: " + trajectoriesPol3.stream()
+//                .mapToDouble(Trajectory::getAvgAcceleration)
+//                .min().getAsDouble());
+//        System.out.println("avg accel for pol3: " + trajectoriesPol3.stream()
+//                .mapToDouble(Trajectory::getAvgAcceleration)
+//                .average().getAsDouble());
+//        System.out.println("max accel for pol3: " + trajectoriesPol3.stream()
+//                .mapToDouble(Trajectory::getAvgAcceleration)
+//                .max().getAsDouble());
+//
+//        System.out.println("min accel for pol4: " + trajectoriesPol4.stream()
+//                .mapToDouble(Trajectory::getAvgAcceleration)
+//                .min().getAsDouble());
+//        System.out.println("avg accel for pol4: " + trajectoriesPol4.stream()
+//                .mapToDouble(Trajectory::getAvgAcceleration)
+//                .average().getAsDouble());
+//        System.out.println("max accel for pol4: " + trajectoriesPol4.stream()
+//                .mapToDouble(Trajectory::getAvgAcceleration)
 //                .max().getAsDouble());
     }
 

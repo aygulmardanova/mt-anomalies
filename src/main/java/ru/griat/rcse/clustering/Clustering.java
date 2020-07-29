@@ -19,7 +19,7 @@ import static ru.griat.rcse.misc.Utils.getImgFileName;
 public class Clustering {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Clustering.class.getName());
-    private static final int OUTPUT_CLUSTERS_COUNT = 17;
+    private static final int OUTPUT_CLUSTERS_COUNT = 12;
 
     /*
      * Stores clusters in a list.
@@ -152,8 +152,8 @@ public class Clustering {
      * @return LCSS distance for t1 and t2
      */
     public Double calcLCSSDist(Trajectory t1, Trajectory t2) {
-        int m = t1.length();
-        int n = t2.length();
+        int m = t1.getKeyPoints().size();
+        int n = t2.getKeyPoints().size();
 
         double delta = getDelta(m, n);
         double epsilonX = getEpsilonX(m, n);
@@ -178,8 +178,8 @@ public class Clustering {
      * @return LCSS for t1 and t2
      */
     private Double calcLCSS(Trajectory t1, Trajectory t2, Double delta, Double epsilonX, Double epsilonY) {
-        int m = t1.length();
-        int n = t2.length();
+        int m = t1.getKeyPoints().size();
+        int n = t2.getKeyPoints().size();
 
         if (m == 0 || n == 0) {
             return 0.0;
@@ -189,8 +189,8 @@ public class Clustering {
 //      according to [8]: delta and epsilon as thresholds for X- and Y-axes respectively
 //      Then the abscissa difference and ordinate difference are less than thresholds (they are relatively close to each other)
 //      they are considered similar and LCSS distance is increased by 1
-        else if (abs(t1.get(m - 1).getX() - t2.get(n - 1).getX()) < epsilonX
-                && abs(t1.get(m - 1).getY() - t2.get(n - 1).getY()) < epsilonY
+        else if (abs(t1.getKeyPoints().get(m - 1).getX() - t2.getKeyPoints().get(n - 1).getX()) < epsilonX
+                && abs(t1.getKeyPoints().get(m - 1).getY() - t2.getKeyPoints().get(n - 1).getY()) < epsilonY
                 && abs(m - n) <= delta) {
             return 1 + calcLCSS(head(t1), head(t2), delta, epsilonX, epsilonY);
         } else {
@@ -209,7 +209,7 @@ public class Clustering {
      */
     private Trajectory head(Trajectory t) {
         Trajectory tClone = t.clone();
-        tClone.getTrajectoryPoints().remove(tClone.length() - 1);
+        tClone.getKeyPoints().remove(tClone.getKeyPoints().size() - 1);
         return tClone;
     }
 
@@ -221,7 +221,7 @@ public class Clustering {
      * @return δ value
      */
     private Double getDelta(int m, int n) {
-        return 0.5 * min(m, n);
+        return 0.2 * min(m, n);
     }
 
     /**
@@ -295,6 +295,8 @@ public class Clustering {
 
     /**
      * Dunn's Validity Index (DI) = dist_min / diam_max
+     * dist_min = min inter-cluster distance (minimum distance between two clusters;
+     * single-linkage -> min distance between two trajectories from wo clusters)
      * diam_max = max intra-cluster distance (maximum distance between two farthermost trajectories)
      */
     private void validateClusters() {
@@ -312,12 +314,8 @@ public class Clustering {
             double maxDist = 0;
             for (int i = 0; i < cluster.getTrajectories().size(); i++) {
                 for (int j = i + 1; j < cluster.getTrajectories().size(); j++) {
-                    try {
-                        if (trajLCSSDistances[cluster.getTrajectories().get(i).getId()][cluster.getTrajectories().get(j).getId()] > maxDist)
-                            maxDist = trajLCSSDistances[cluster.getTrajectories().get(i).getId()][cluster.getTrajectories().get(j).getId()];
-                    } catch (NullPointerException npe) {
-                        System.out.println("npe");
-                    }
+                    if (trajLCSSDistances[cluster.getTrajectories().get(i).getId()][cluster.getTrajectories().get(j).getId()] > maxDist)
+                        maxDist = trajLCSSDistances[cluster.getTrajectories().get(i).getId()][cluster.getTrajectories().get(j).getId()];
                 }
             }
 

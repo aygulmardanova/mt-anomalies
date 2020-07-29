@@ -145,7 +145,7 @@ public class DisplayImage {
      */
     private void drawBoldTrajectoryPoint(BufferedImage img, TrajectoryPoint tp) {
         if (tp.getX() + 2 >= img.getWidth() || tp.getY() + 2 >= img.getHeight()) {
-            LOGGER.error("Out of image borders: (" + tp.getX() + ", " + tp.getY() + ")");
+//            LOGGER.error("Out of image borders: (" + tp.getX() + ", " + tp.getY() + ")");
             return;
         }
 
@@ -159,7 +159,7 @@ public class DisplayImage {
     private void drawExtraBoldTrajectoryPoint(BufferedImage img, TrajectoryPoint tp) {
         if (tp.getX() + 3 >= img.getWidth() || tp.getY() + 3 >= img.getHeight()) {
             drawBoldTrajectoryPoint(img, tp);
-            LOGGER.error("Out of image borders: (" + tp.getX() + ", " + tp.getY() + ")");
+//            LOGGER.error("Out of image borders: (" + tp.getX() + ", " + tp.getY() + ")");
             return;
         }
         for (int i = -2; i < 3; i++) {

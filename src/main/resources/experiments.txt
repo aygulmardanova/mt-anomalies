@@ -4,5 +4,20 @@ epsilonX = 0.1 * (maxX - minX);
 epsilonY = 0.1 * (maxY - minY);
 delta = 0.5 * min(m, n)
 
+17 output clusters
+
 DI = 0.50
+
+-----------------------
 2.
+all trajectories
+regression threshold = 0,98, {3, 4}
+consider only key points
+the same parameter values
+
+17 output clusters
+
+DI = 0.67
+
+-----------------------
+3.

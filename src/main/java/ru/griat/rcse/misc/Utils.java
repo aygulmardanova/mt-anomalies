@@ -25,10 +25,10 @@ public class Utils {
 //    time between frames in seconds (here 0.01 sec)
     public static final double INTER_FRAME_TIME = 0.01;
 
-    private static final int IMAGE_MIN_X = 0;
-    private static final int IMAGE_MAX_X = 1280;
-    private static final int IMAGE_MIN_Y = 0;
-    private static final int IMAGE_MAX_Y = 720;
+    public static final int IMAGE_MIN_X = 0;
+    public static final int IMAGE_MAX_X = 1280;
+    public static final int IMAGE_MIN_Y = 0;
+    public static final int IMAGE_MAX_Y = 720;
 
     public static String getImgFileName(String name) {
         return name + "." + INPUT_IMG_EXTENSION;
