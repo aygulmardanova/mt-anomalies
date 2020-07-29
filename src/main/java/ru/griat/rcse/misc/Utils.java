@@ -17,7 +17,7 @@ public class Utils {
     public static final Path CSV_DIR = Paths.get(RESOURCES_PATH.toString(), "csv");
 
     public static final String[] INPUT_FILE_NAMES = {"1", "2", "3", "4"};
-    public static final String[] INPUT_FILE_NAMES_FIRST = {"1"};
+    public static final String[] INPUT_FILE_NAMES_FIRST = {"2"};
     public static final String INPUT_FILE_EXTENSION = "txt";
     public static final String INPUT_IMG_EXTENSION = "jpg";
     public static final String CSV_EXTENSION = "csv";

@@ -8,6 +8,10 @@ public class TrajectoryPoint implements Cloneable {
     private int y;
     private int time;
 
+    private double cpDist;
+    private double epsilonX;
+    private double epsilonY;
+
     public TrajectoryPoint(int x, int y) {
         this.x = x;
         this.y = y;
@@ -60,6 +64,30 @@ public class TrajectoryPoint implements Cloneable {
 
     public void setTime(int time) {
         this.time = time;
+    }
+
+    public double getCpDist() {
+        return cpDist;
+    }
+
+    public void setCpDist(double cpDist) {
+        this.cpDist = cpDist;
+    }
+
+    public double getEpsilonX() {
+        return epsilonX;
+    }
+
+    public void setEpsilonX(double epsilonX) {
+        this.epsilonX = epsilonX;
+    }
+
+    public double getEpsilonY() {
+        return epsilonY;
+    }
+
+    public void setEpsilonY(double epsilonY) {
+        this.epsilonY = epsilonY;
     }
 
     /**

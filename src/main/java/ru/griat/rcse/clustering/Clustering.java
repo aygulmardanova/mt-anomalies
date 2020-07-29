@@ -1,25 +1,21 @@
 package ru.griat.rcse.clustering;
 
-import ch.qos.logback.classic.boolex.IEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
-import ru.griat.rcse.visualisation.DisplayImage;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 import static java.lang.Math.*;
-import static ru.griat.rcse.misc.Utils.getImgFileName;
 
 public class Clustering {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Clustering.class.getName());
-    private static final int OUTPUT_CLUSTERS_COUNT = 12;
+    private static final int OUTPUT_CLUSTERS_COUNT = 15;
 
     /*
      * Stores clusters in a list.
@@ -53,17 +49,30 @@ public class Clustering {
         }
     }
 
-    public void setBorders(int minX, int maxX, int minY, int maxY) {
+    public void setBorders(int minX, int maxX, int minY, int maxY, List<Trajectory> trajectories) {
         this.minX = minX;
         this.maxX = maxX;
         this.minY = minY;
         this.maxY = maxY;
         this.cameraPoint = new TrajectoryPoint((int) Math.round(0.25 * maxX), (int) Math.round(0.95 * maxY));
+        calcEuclDistancesToCP(trajectories);
 //        try {
 //            new DisplayImage().displayAndSave(getImgFileName("1"), cameraPoint, false);
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
+    }
+
+    private void calcEuclDistancesToCP(List<Trajectory> trajectories) {
+        trajectories.forEach(tr ->
+                tr.getKeyPoints().forEach(kp -> {
+                            double dist = kp.distanceTo(cameraPoint);
+                            kp.setCpDist(dist);
+                            double epsilon = 0.0;
+
+                        }
+                )
+        );
     }
 
     /**
