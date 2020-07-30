@@ -169,7 +169,11 @@ public class DisplayImage {
         }
         for (int i = -2; i < 3; i++) {
             for (int j = -2; j < 3; j++) {
-                img.setRGB(tp.getX() + i, tp.getY() + j, clusterColors[this.i]);
+                try {
+                    img.setRGB(tp.getX() + i, tp.getY() + j, clusterColors[this.i]);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println(e);
+                }
             }
         }
     }

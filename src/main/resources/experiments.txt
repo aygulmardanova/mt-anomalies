@@ -37,3 +37,10 @@ maxKPCount = 11
 clusters 12
 
 DI = 0.64
+
+-----------------------
+5.
+
+new keyPoints
+DI = 0.60
+but more accurate

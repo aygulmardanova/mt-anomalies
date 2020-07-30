@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
+import ru.griat.rcse.misc.LinkageMethod;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,7 +16,7 @@ import static java.lang.Math.*;
 public class Clustering {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Clustering.class.getName());
-    private static final int OUTPUT_CLUSTERS_COUNT = 15;
+    private static final int OUTPUT_CLUSTERS_COUNT = 17;
 
     /*
      * Stores clusters in a list.
@@ -66,12 +67,13 @@ public class Clustering {
     private void calcEuclDistancesToCP(List<Trajectory> trajectories) {
         trajectories.forEach(tr ->
                 tr.getKeyPoints().forEach(kp -> {
-                            double dist = kp.distanceTo(cameraPoint);
-                            kp.setCpDist(dist);
-                            double epsilon = 0.0;
-
-                        }
-                )
+                            double cpDist = kp.distanceTo(cameraPoint);
+                            kp.setCpDist(cpDist);
+                            double epsilonX = 10.0 * (maxX - minX) / cpDist;
+                            kp.setEpsilonX(epsilonX);
+                            double epsilonY = 10.0 * (maxY - minY) / cpDist;
+                            kp.setEpsilonY(epsilonY);
+                        })
         );
     }
 
@@ -131,17 +133,21 @@ public class Clustering {
                 for (int i2 = i1 + 1; i2 < clusters.size(); i2++) {
                     if (i1 != i2
                             && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] != null
-                            && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] < minClustDist) {
+                            && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] <= minClustDist
+                            && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2))) {
                         minClustDist = clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()];
                         id1 = i1;
                         id2 = i2;
                     }
                 }
             }
+            if (id1 < 0 || id2 < 0) {
+                break;
+            }
 //            join i1 and i2 clusters, add i1 traj-es to cluster i2
             clusters.get(id1).appendTrajectories(clusters.get(id2).getTrajectories());
 //            recalculate D for i1 and i2 lines -> set i2 line all to NULLs
-            recalcClustersDistMatrix(id1, id2);
+            recalcClustersDistMatrix(id1, id2, LinkageMethod.MAXIMUM);
 
 //            remove i2 from 'clusters'
             clusters.remove(id2);
@@ -150,6 +156,16 @@ public class Clustering {
         }
         printClusters();
         validateClusters();
+    }
+
+    private boolean containsAbsolutelyDifferentTraj(Cluster c1, Cluster c2) {
+        for (Trajectory t1 : c1.getTrajectories()) {
+            for (Trajectory t2 : c2.getTrajectories()) {
+                if (trajLCSSDistances[t1.getId()][t2.getId()] != null && trajLCSSDistances[t1.getId()][t2.getId()] == 1.0)
+                    return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -193,12 +209,16 @@ public class Clustering {
         if (m == 0 || n == 0) {
             return 0.0;
         }
+        TrajectoryPoint tp1 = t1.getKeyPoints().get(m - 1);
+        TrajectoryPoint tp2 = t2.getKeyPoints().get(n - 1);
+        epsilonX = getEpsilonX(tp1, tp2, LinkageMethod.AVERAGE);
+        epsilonY = getEpsilonY(tp1, tp2, LinkageMethod.AVERAGE);
 
 //      check last trajectory point (of each trajectory-part recursively)
 //      according to [8]: delta and epsilon as thresholds for X- and Y-axes respectively
 //      Then the abscissa difference and ordinate difference are less than thresholds (they are relatively close to each other)
 //      they are considered similar and LCSS distance is increased by 1
-        else if (abs(t1.getKeyPoints().get(m - 1).getX() - t2.getKeyPoints().get(n - 1).getX()) < epsilonX
+        if (abs(t1.getKeyPoints().get(m - 1).getX() - t2.getKeyPoints().get(n - 1).getX()) < epsilonX
                 && abs(t1.getKeyPoints().get(m - 1).getY() - t2.getKeyPoints().get(n - 1).getY()) < epsilonY
                 && abs(m - n) <= delta) {
             return 1 + calcLCSS(head(t1), head(t2), delta, epsilonX, epsilonY);
@@ -244,6 +264,18 @@ public class Clustering {
         return 0.1 * (maxX - minX);
     }
 
+    private Double getEpsilonX(TrajectoryPoint tp1, TrajectoryPoint tp2, LinkageMethod method) {
+        switch (method) {
+            case SINGLE:
+                return Math.min(tp1.getEpsilonX(), tp2.getEpsilonX());
+            case AVERAGE:
+                return (tp1.getEpsilonX() + tp2.getEpsilonX()) / 2;
+            case MAXIMUM:
+                return Math.max(tp1.getEpsilonX(), tp2.getEpsilonX());
+        }
+        return 0.1 * (maxX - minX);
+    }
+
     /**
      * calc ε for Y
      *
@@ -255,6 +287,18 @@ public class Clustering {
         return 0.1 * (maxY - minY);
     }
 
+    private Double getEpsilonY(TrajectoryPoint tp1, TrajectoryPoint tp2, LinkageMethod method) {
+        switch (method) {
+            case SINGLE:
+                return Math.min(tp1.getEpsilonY(), tp2.getEpsilonY());
+            case AVERAGE:
+                return (tp1.getEpsilonY() + tp2.getEpsilonY()) / 2;
+            case MAXIMUM:
+                return Math.max(tp1.getEpsilonY(), tp2.getEpsilonY());
+        }
+        return 0.1 * (maxY - minY);
+    }
+
     /**
      * At each step calc a distance matrix btwn clusters
      * Merge two clusters with a min dist -> requires an update of the dist matrix
@@ -263,12 +307,12 @@ public class Clustering {
      * @param clusterId1 index of left joined cluster in clusters list (remained cluster)
      * @param clusterId2 index of right joined cluster in clusters list (removed cluster)
      */
-    private void recalcClustersDistMatrix(int clusterId1, int clusterId2) {
+    private void recalcClustersDistMatrix(int clusterId1, int clusterId2, LinkageMethod method) {
         for (int i = 0; i < clusterId1; i++) {
-            clustLCSSDistances[clusters.get(i).getId()][clusterId1] = calcClustersDist(clusters.get(i), clusters.get(clusterId1));
+            clustLCSSDistances[clusters.get(i).getId()][clusterId1] = calcClustersDist(clusters.get(i), clusters.get(clusterId1), method);
         }
         for (int j = clusterId2; j < clusters.size(); j++) {
-            clustLCSSDistances[clusterId2][clusters.get(j).getId()] = calcClustersDist(clusters.get(clusterId2), clusters.get(j));
+            clustLCSSDistances[clusterId2][clusters.get(j).getId()] = calcClustersDist(clusters.get(clusterId2), clusters.get(j), method);
         }
         clustLCSSDistances[clusters.get(clusterId1).getId()][clusters.get(clusterId2).getId()] = null;
     }
@@ -282,13 +326,45 @@ public class Clustering {
      * @param cluster2 second cluster
      * @return distance between clusters
      */
-    private Double calcClustersDist(Cluster cluster1, Cluster cluster2) {
-        double dist = Double.MAX_VALUE;
-        for (Trajectory trajectory1 : cluster1.getTrajectories()) {
-            for (Trajectory trajectory2 : cluster2.getTrajectories()) {
-                Double lcssDist = trajLCSSDistances[trajectory1.getId()][trajectory2.getId()];
-                if (lcssDist != null && lcssDist < dist)
-                    dist = lcssDist;
+    private Double calcClustersDist(Cluster cluster1, Cluster cluster2, LinkageMethod method) {
+        double dist = 0.0;
+//        single linkage
+        switch (method) {
+            case SINGLE: {
+                dist = Double.MAX_VALUE;
+                for (Trajectory trajectory1 : cluster1.getTrajectories()) {
+                    for (Trajectory trajectory2 : cluster2.getTrajectories()) {
+                        Double lcssDist = trajLCSSDistances[trajectory1.getId()][trajectory2.getId()];
+                        if (lcssDist != null && lcssDist < dist)
+                            dist = lcssDist;
+                    }
+                }
+                break;
+            }
+            case AVERAGE: {
+                int count = 0;
+                for (Trajectory trajectory1 : cluster1.getTrajectories()) {
+                    for (Trajectory trajectory2 : cluster2.getTrajectories()) {
+                        Double lcssDist = trajLCSSDistances[trajectory1.getId()][trajectory2.getId()];
+                        if (lcssDist != null) {
+                            dist += lcssDist;
+                            count++;
+                        }
+                    }
+                }
+                dist = dist / count;
+                break;
+            }
+            case MAXIMUM: {
+                dist = Double.MIN_VALUE;
+                for (Trajectory trajectory1 : cluster1.getTrajectories()) {
+                    for (Trajectory trajectory2 : cluster2.getTrajectories()) {
+                        Double lcssDist = trajLCSSDistances[trajectory1.getId()][trajectory2.getId()];
+                        if (lcssDist != null && lcssDist > dist)
+                            dist = lcssDist;
+                    }
+                }
+                break;
             }
         }
         return dist;

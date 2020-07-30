@@ -30,6 +30,11 @@ public class Utils {
     public static final int IMAGE_MIN_Y = 0;
     public static final int IMAGE_MAX_Y = 720;
 
+    public static final int MIN_LENGTH = 10;
+    public static final int MIN_TOTAL_DIST = 80;
+    public static final int MAX_KP_COUNT = 9;
+    public static final int TIME_STEP = 5;
+
     public static String getImgFileName(String name) {
         return name + "." + INPUT_IMG_EXTENSION;
     }

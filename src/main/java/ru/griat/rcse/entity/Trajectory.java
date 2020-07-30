@@ -8,8 +8,7 @@ import java.util.Objects;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static ru.griat.rcse.misc.Utils.INTER_FRAME_TIME;
-import static ru.griat.rcse.misc.Utils.checkTPValidity;
+import static ru.griat.rcse.misc.Utils.*;
 
 public class Trajectory implements Cloneable {
 
@@ -98,6 +97,17 @@ public class Trajectory implements Cloneable {
     }
 
     public void addKeyPoint(TrajectoryPoint keyPoint) {
+        if (keyPoint.getTime() > this.get(length() - 1).getTime())
+            return;
+        if (this.length() > MAX_KP_COUNT && this.keyPoints.stream().anyMatch(thisKP -> Math.abs(thisKP.getTime() - keyPoint.getTime()) < 1 * TIME_STEP)) {
+            int newTime = keyPoint.getTime() + 2 * TIME_STEP;
+            this.addKeyPoint(new TrajectoryPoint(
+                    (int) Math.round(this.regressionX.predict(newTime)),
+                    (int) Math.round(this.regressionY.predict(newTime)),
+                    newTime
+            ));
+            return;
+        }
         if (!keyPoints.contains(keyPoint) && checkTPValidity(keyPoint))
             this.keyPoints.add(keyPoint);
     }

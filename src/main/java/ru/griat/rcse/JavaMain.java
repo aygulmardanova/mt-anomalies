@@ -28,7 +28,7 @@ import static ru.griat.rcse.misc.Utils.*;
 public class JavaMain {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(JavaMain.class.getName());
-    private static final String EXPERIMENT_ID = "exp3";
+    private static final String EXPERIMENT_ID = "exp6";
 
     private static Clustering clustering;
 
@@ -40,28 +40,13 @@ public class JavaMain {
             Double[][] trajLCSSDistances;
 //            displayTrajectories(getImgFileName(input), trajectories);
 
-            int minLength = 10;
-            int minTotalDist = 80;
-//            displayTrajectories(getImgFileName(input), trajectories.stream().filter(tr -> tr.length() <= minLength || tr.totalDist() < minTotalDist).collect(toList()));
+            trajectories = trajectories.stream().filter(tr -> tr.length() > MIN_LENGTH && tr.totalDist() >= MIN_TOTAL_DIST).collect(toList());
 
-            trajectories = trajectories.stream().filter(tr -> tr.length() > minLength && tr.totalDist() >= minTotalDist).collect(toList());
-
-//            int st = 269;
-//            trajectories = trajectories.subList(st, st + 1);
-//            displayTrajectories(getImgFileName(input), trajectories);
-
-//            displayTrajectories(getImgFileName(input), trajectories.subList(150, 152));
             performRegression(trajectories, input);
-            displayTrajectories(getImgFileName(input), trajectories);
+//            displayTrajectories(getImgFileName(input), trajectories);
 
             clustering = new Clustering(initialTrajectories);
             setInputBorders(initialTrajectories);
-
-//            trajectories = initialTrajectories.stream()
-//                    .filter(tr ->
-//                            getIndexesOfTrajWithLengthLessThan(initialTrajectories, 15).contains(tr.getId()))
-//                    .collect(toList());
-//            displayTrajectories(getImgFileName(input), trajectories);
 
             calcDistances(trajectories, 0, 0, 0, 0);
 
@@ -73,10 +58,10 @@ public class JavaMain {
 //            clustering.setTrajLCSSDistances(trajLCSSDistances);
 //            displayTrajectories(getImgFileName(input), trajectories, filterTrajWithDistLessThan(trajectories, trajLCSSDistances, 1.0));
 
-            List<Cluster> clusters = clustering.cluster(trajectories);
 //            int clSt = 0;
 //            displayClusters(getImgFileName(input), clusters.subList(clSt, clSt + 1), false);
-            displayClusters(getImgFileName(input), clusters, false);
+            List<Cluster> clusters = clustering.cluster(trajectories);
+//            displayClusters(getImgFileName(input), clusters.subList(11, 12), false);
             for (int i = 0; i < clusters.size(); i++) {
                 displayClusters(getImgFileName(input), clusters.subList(i, i + 1), false);
             }
@@ -150,8 +135,7 @@ public class JavaMain {
     }
 
     private static void calculateKeyPoints(Trajectory currentTr) {
-        int maxKPCount = 9;
-        if (currentTr.length() < maxKPCount) {
+        if (currentTr.length() < MAX_KP_COUNT) {
             currentTr.setKeyPoints(currentTr.getTrajectoryPoints().stream().map(TrajectoryPoint::clone).collect(toList()));
             return;
         }
@@ -222,7 +206,6 @@ public class JavaMain {
                     tt));
         }
 
-        int timeStep = 5;
         int stTime = currentTr.get(0).getTime();
         int endTime = currentTr.get(currentTr.length() - 1).getTime();
 //            add first point
@@ -232,7 +215,7 @@ public class JavaMain {
                     (int) Math.round(currentTr.getRegressionY().predict(stTime)),
                     stTime));
 //            add last point
-        if (currentTr.getKeyPoints().stream().noneMatch(kp -> endTime - kp.getTime() < 2 * timeStep))
+        if (currentTr.getKeyPoints().stream().noneMatch(kp -> endTime - kp.getTime() < 2 * TIME_STEP))
             currentTr.addKeyPoint(new TrajectoryPoint(
                     (int) Math.round(currentTr.getRegressionX().predict(endTime)),
                     (int) Math.round(currentTr.getRegressionY().predict(endTime)),
@@ -240,8 +223,8 @@ public class JavaMain {
 
 //        if small amount of trajectory points
 //        and trajectory length is more than 2 times bigger than amount of key points:
-        if (currentTr.getKeyPoints().size() < maxKPCount && currentTr.length() >= currentTr.getKeyPoints().size()) {
-            int diff = maxKPCount - currentTr.getKeyPoints().size();
+        if (currentTr.getKeyPoints().size() < MAX_KP_COUNT && currentTr.length() >= currentTr.getKeyPoints().size()) {
+            int diff = MAX_KP_COUNT - currentTr.getKeyPoints().size();
             double interval = (currentTr.length() - 3) * 1.0 / diff;
             for (int i = 0; i < diff; i++) {
                 int tt = currentTr.get((int) Math.round(1 + interval * i)).getTime();
