@@ -118,6 +118,7 @@ public class Clustering {
         whileCluster(OUTPUT_CLUSTERS_COUNT);
         printClusters();
         validateClusters();
+        clustersModeling();
         System.out.println(clusters.size() + " clusters in total");
         for (int i = 0; i < clusters.size(); i++) {
             for (int j = i + 1; j < clusters.size(); j++) {
@@ -445,6 +446,30 @@ public class Clustering {
 
         double DI = minDist / maxDiam;
         LOGGER.info(String.format("DI = %.2f", DI));
+    }
+
+    private void clustersModeling() {
+        for (Cluster c: clusters) {
+            if (c.getTrajectories().size() == 1) {
+                c.setClusterModel(c.getTrajectories().get(0));
+                continue;
+            }
+            Trajectory model = null;
+            double avg = Double.MAX_VALUE;
+            for (Trajectory t: c.getTrajectories()) {
+                double sum = 0.0;
+                for (Trajectory t1: c.getTrajectories()) {
+                    if (t1 != t)
+                        sum += t.getId() < t1.getId() ? trajLCSSDistances[t.getId()][t1.getId()] : trajLCSSDistances[t1.getId()][t.getId()];
+                }
+                double curAvg = sum / (c.getTrajectories().size() - 1);
+                if (curAvg < avg) {
+                    model = t;
+                    avg = curAvg;
+                }
+            }
+            c.setClusterModel(model);
+        }
     }
 
 }

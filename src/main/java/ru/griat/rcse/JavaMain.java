@@ -78,7 +78,7 @@ public class JavaMain {
             for (int i = 0; i < clusters.size(); i++) {
                 displayClusters(getImgFileName(input), clusters.subList(i, i + 1), false);
             }
-            displayClusters(getImgFileName(input), clusters, false);
+//            displayClusters(getImgFileName(input), clusters, false);
         }
     }
 

@@ -11,6 +11,8 @@ public class Cluster {
 
     private List<Trajectory> trajectories;
 
+    private Trajectory clusterModel;
+
     public Cluster() {
     }
 
@@ -43,6 +45,14 @@ public class Cluster {
 
     public void setTrajectories(List<Trajectory> trajectories) {
         this.trajectories = trajectories;
+    }
+
+    public Trajectory getClusterModel() {
+        return clusterModel;
+    }
+
+    public void setClusterModel(Trajectory clusterModel) {
+        this.clusterModel = clusterModel;
     }
 
     public void appendTrajectory(Trajectory trajectory) {
