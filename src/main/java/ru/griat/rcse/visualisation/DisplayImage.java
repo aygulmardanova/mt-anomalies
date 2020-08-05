@@ -14,10 +14,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import static ru.griat.rcse.misc.Utils.INPUT_FILE_DIR;
-import static ru.griat.rcse.misc.Utils.INPUT_IMG_EXTENSION;
-import static ru.griat.rcse.misc.Utils.OUTPUT_IMG_DIR;
-import static ru.griat.rcse.misc.Utils.getFileDir;
+import static ru.griat.rcse.misc.Utils.*;
 
 public class DisplayImage {
 

@@ -16,7 +16,7 @@ import static java.lang.Math.*;
 public class Clustering {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Clustering.class.getName());
-    private static final int OUTPUT_CLUSTERS_COUNT = 17;
+    private static final int OUTPUT_CLUSTERS_COUNT = 8;
 
     /*
      * Stores clusters in a list.
@@ -65,16 +65,34 @@ public class Clustering {
     }
 
     private void calcEuclDistancesToCP(List<Trajectory> trajectories) {
+        double coeff = 20.0;
+        final double[] maxEpsilonX = {0.0};
+        final double[] maxEpsilonY = {0.0};
+        final double[] minEpsilonX = {Double.MAX_VALUE};
+        final double[] minEpsilonY = {Double.MAX_VALUE};
         trajectories.forEach(tr ->
                 tr.getKeyPoints().forEach(kp -> {
-                            double cpDist = kp.distanceTo(cameraPoint);
-                            kp.setCpDist(cpDist);
-                            double epsilonX = 10.0 * (maxX - minX) / cpDist;
-                            kp.setEpsilonX(epsilonX);
-                            double epsilonY = 10.0 * (maxY - minY) / cpDist;
-                            kp.setEpsilonY(epsilonY);
-                        })
+                    double cpDist = kp.distanceTo(cameraPoint);
+                    kp.setCpDist(cpDist);
+                    double epsilonX = coeff * (maxX - minX) / cpDist;
+                    kp.setEpsilonX(epsilonX);
+                    double epsilonY = coeff * (maxY - minY) / cpDist;
+                    kp.setEpsilonY(epsilonY);
+
+                    if (epsilonX > maxEpsilonX[0])
+                        maxEpsilonX[0] = epsilonX;
+                    if (epsilonX < minEpsilonX[0])
+                        minEpsilonX[0] = epsilonX;
+                    if (epsilonY > maxEpsilonY[0])
+                        maxEpsilonY[0] = epsilonY;
+                    if (epsilonY < minEpsilonY[0])
+                        minEpsilonY[0] = epsilonY;
+                })
         );
+        System.out.println(String.format("max for X: %.3f (pixels)", maxEpsilonX[0]));
+        System.out.println(String.format("max for Y: %.3f (pixels)", maxEpsilonY[0]));
+        System.out.println(String.format("min for X: %.3f (pixels)", minEpsilonX[0]));
+        System.out.println(String.format("min for Y: %.3f (pixels)", minEpsilonY[0]));
     }
 
     /**
@@ -98,6 +116,15 @@ public class Clustering {
     public List<Cluster> cluster(List<Trajectory> trajectories) {
         initClusters(trajectories);
         whileCluster(OUTPUT_CLUSTERS_COUNT);
+        printClusters();
+        validateClusters();
+        System.out.println(clusters.size() + " clusters in total");
+        for (int i = 0; i < clusters.size(); i++) {
+            for (int j = i + 1; j < clusters.size(); j++) {
+//                if (clustLCSSDistances[clusters.get(i).getId()][clusters.get(j).getId()] < 0.5)
+//                System.out.println(String.format("(%d, %d) = %.2f |  ", clusters.get(i).getId(), clusters.get(j).getId(), clustLCSSDistances[clusters.get(i).getId()][clusters.get(j).getId()]));
+            }
+        }
         return clusters;
     }
 
@@ -134,10 +161,15 @@ public class Clustering {
                     if (i1 != i2
                             && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] != null
                             && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] <= minClustDist
-                            && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2))) {
+//                            && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2))
+                    ) {
+                        if (clusters.size() > 25 && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2))
+                                || clusters.size() <= 29 && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] <= 0.91
+                                || clusters.size() <= 25 ) {
                         minClustDist = clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()];
                         id1 = i1;
                         id2 = i2;
+                        }
                     }
                 }
             }
@@ -147,15 +179,13 @@ public class Clustering {
 //            join i1 and i2 clusters, add i1 traj-es to cluster i2
             clusters.get(id1).appendTrajectories(clusters.get(id2).getTrajectories());
 //            recalculate D for i1 and i2 lines -> set i2 line all to NULLs
-            recalcClustersDistMatrix(id1, id2, LinkageMethod.MAXIMUM);
+            recalcClustersDistMatrix(id1, id2, LinkageMethod.AVERAGE);
 
 //            remove i2 from 'clusters'
             clusters.remove(id2);
 
             numOfClusters--;
         }
-        printClusters();
-        validateClusters();
     }
 
     private boolean containsAbsolutelyDifferentTraj(Cluster c1, Cluster c2) {
@@ -308,12 +338,18 @@ public class Clustering {
      * @param clusterId2 index of right joined cluster in clusters list (removed cluster)
      */
     private void recalcClustersDistMatrix(int clusterId1, int clusterId2, LinkageMethod method) {
-        for (int i = 0; i < clusterId1; i++) {
-            clustLCSSDistances[clusters.get(i).getId()][clusterId1] = calcClustersDist(clusters.get(i), clusters.get(clusterId1), method);
+        for (int i = 0; i < clusters.size(); i++) {
+            for (int j = i + 1; j < clusters.size(); j++) {
+                clustLCSSDistances[clusters.get(i).getId()][clusters.get(j).getId()] =
+                        calcClustersDist(clusters.get(i), clusters.get(j), method);
+            }
         }
-        for (int j = clusterId2; j < clusters.size(); j++) {
-            clustLCSSDistances[clusterId2][clusters.get(j).getId()] = calcClustersDist(clusters.get(clusterId2), clusters.get(j), method);
-        }
+//        for (int i = 0; i < clusterId1; i++) {
+//            clustLCSSDistances[clusters.get(i).getId()][clusterId1] = calcClustersDist(clusters.get(i), clusters.get(clusterId1), method);
+//        }
+//        for (int j = clusterId2; j < clusters.size(); j++) {
+//            clustLCSSDistances[clusterId2][clusters.get(j).getId()] = calcClustersDist(clusters.get(clusterId2), clusters.get(j), method);
+//        }
         clustLCSSDistances[clusters.get(clusterId1).getId()][clusters.get(clusterId2).getId()] = null;
     }
 

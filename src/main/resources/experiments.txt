@@ -28,7 +28,7 @@ minTotalDist 80
 maxKPCount 9
 
 DI = 0.75
-
+List.of(18, 19, 20, 40, 44).contains(clusters.get(i1).getId()) && List.of(19, 20, 23, 44, 84, 196).contains(clusters.get(i2).getId())
 -----------------------
 4.
 minLength = 10;

@@ -96,16 +96,18 @@ public class Trajectory implements Cloneable {
         this.keyPoints = keyPoints;
     }
 
-    public void addKeyPoint(TrajectoryPoint keyPoint) {
+    public void addKeyPoint(TrajectoryPoint keyPoint, Integer bonusTT) {
         if (keyPoint.getTime() > this.get(length() - 1).getTime())
             return;
         if (this.length() > MAX_KP_COUNT && this.keyPoints.stream().anyMatch(thisKP -> Math.abs(thisKP.getTime() - keyPoint.getTime()) < 1 * TIME_STEP)) {
-            int newTime = keyPoint.getTime() + 2 * TIME_STEP;
+            if (bonusTT == null)
+                return;
+//            int newTime = keyPoint.getTime() + 2 * TIME_STEP;
             this.addKeyPoint(new TrajectoryPoint(
-                    (int) Math.round(this.regressionX.predict(newTime)),
-                    (int) Math.round(this.regressionY.predict(newTime)),
-                    newTime
-            ));
+                    (int) Math.round(this.regressionX.predict(bonusTT)),
+                    (int) Math.round(this.regressionY.predict(bonusTT)),
+                    bonusTT
+            ), null);
             return;
         }
         if (!keyPoints.contains(keyPoint) && checkTPValidity(keyPoint))

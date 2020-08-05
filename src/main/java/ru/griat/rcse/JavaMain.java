@@ -18,6 +18,7 @@ import ru.griat.rcse.parsing.TrajectoriesParser;
 import ru.griat.rcse.visualisation.DisplayImage;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.IntStream;
@@ -39,32 +40,45 @@ public class JavaMain {
             List<Trajectory> initialTrajectories = trajectories;
             Double[][] trajLCSSDistances;
 //            displayTrajectories(getImgFileName(input), trajectories);
+//            displayTrajectories(getImgFileName(input), trajectories.stream().filter(tr -> tr.length() <= MIN_LENGTH || tr.totalDist() < MIN_TOTAL_DIST).collect(toList()));
 
             trajectories = trajectories.stream().filter(tr -> tr.length() > MIN_LENGTH && tr.totalDist() >= MIN_TOTAL_DIST).collect(toList());
-
-            performRegression(trajectories, input);
 //            displayTrajectories(getImgFileName(input), trajectories);
+
+//            int ind = 10;
+            performRegression(trajectories, input);
+//            displayTrajectories(getImgFileName(input), trajectories, List.of(0, 2, 6, 8, 13, 70, 176, 180));
 
             clustering = new Clustering(initialTrajectories);
             setInputBorders(initialTrajectories);
+//            displayTrajectories(getImgFileName(input), trajectories);
 
-            calcDistances(trajectories, 0, 0, 0, 0);
+//            calcDistances(trajectories, 0, 0, 0, 0);
 
-            trajLCSSDistances = clustering.getTrajLCSSDistances();
-            new CSVProcessing().writeCSV(trajLCSSDistances, 0, initialTrajectories.size(), 0, initialTrajectories.size(), EXPERIMENT_ID, input);
+//            trajLCSSDistances = clustering.getTrajLCSSDistances();
+//            new CSVProcessing().writeCSV(trajLCSSDistances, 0, initialTrajectories.size(), 0, initialTrajectories.size(), EXPERIMENT_ID, input);
 
-//            trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
-//            new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
-//            clustering.setTrajLCSSDistances(trajLCSSDistances);
+            trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
+            new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
+            clustering.setTrajLCSSDistances(trajLCSSDistances);
 //            displayTrajectories(getImgFileName(input), trajectories, filterTrajWithDistLessThan(trajectories, trajLCSSDistances, 1.0));
 
 //            int clSt = 0;
 //            displayClusters(getImgFileName(input), clusters.subList(clSt, clSt + 1), false);
             List<Cluster> clusters = clustering.cluster(trajectories);
-//            displayClusters(getImgFileName(input), clusters.subList(11, 12), false);
+//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 18 || cl.getId() == 19).collect(toList()), false);
+//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 18 || cl.getId() == 20).collect(toList()), false);
+//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 18 || cl.getId() == 23).collect(toList()), false);
+//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 19 || cl.getId() == 20).collect(toList()), false);
+//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 20 || cl.getId() == 23).collect(toList()), false);
+//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 20 || cl.getId() == 196).collect(toList()), false);
+//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 40 || cl.getId() == 44).collect(toList()), false);
+//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 40 || cl.getId() == 84).collect(toList()), false);
+//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 44 || cl.getId() == 84).collect(toList()), false);
             for (int i = 0; i < clusters.size(); i++) {
                 displayClusters(getImgFileName(input), clusters.subList(i, i + 1), false);
             }
+            displayClusters(getImgFileName(input), clusters, false);
         }
     }
 
@@ -111,22 +125,22 @@ public class JavaMain {
         }
 //        printStatistics(trajectories, input, minDegree, minR2forX, minR2forY, minR2forXid, minR2forYid);
 
-//        List<Trajectory> copies = new ArrayList<>();
-//        for (Trajectory traj : trajectories) {
-//            List<TrajectoryPoint> tpCopy = traj.getTrajectoryPoints().stream().map(tp ->
-//                    new TrajectoryPoint(
-//                            (int) Math.round(traj.getRegressionX().predict(tp.getTime())),
-//                            (int) Math.round(traj.getRegressionY().predict(tp.getTime())),
-//                            tp.getTime()
-//                    )).collect(toList());
-//            Trajectory trCopy = new Trajectory(traj.getId() * 100, tpCopy);
-//            trCopy.setRegressionX(traj.getRegressionX());
-//            trCopy.setRegressionY(traj.getRegressionY());
-////            trCopy.setKeyPoints(traj.getKeyPoints());
+        List<Trajectory> copies = new ArrayList<>();
+        for (Trajectory traj : trajectories) {
+            List<TrajectoryPoint> tpCopy = traj.getTrajectoryPoints().stream().map(tp ->
+                    new TrajectoryPoint(
+                            (int) Math.round(traj.getRegressionX().predict(tp.getTime())),
+                            (int) Math.round(traj.getRegressionY().predict(tp.getTime())),
+                            tp.getTime()
+                    )).collect(toList());
+            Trajectory trCopy = new Trajectory(traj.getId() * 100, tpCopy);
+            trCopy.setRegressionX(traj.getRegressionX());
+            trCopy.setRegressionY(traj.getRegressionY());
+            trCopy.setKeyPoints(traj.getKeyPoints());
 //            copies.add(traj);
-//            copies.add(trCopy);
-//        }
-//        displayRegressionTrajectories(input, null, trajectories);
+            copies.add(trCopy);
+        }
+//        displayRegressionTrajectories(input, null, copies);
 //        displayRegressionTrajectories(input, null, trajectories.stream().filter(tr -> List.of(300, 575, 2).contains(tr.getId())).collect(toList()));
 //        displayRegressionTrajectories(input, null, copies.stream().filter(tr -> tr.getRegressionX().degree() == 4 && tr.getRegressionY().degree() == 4).collect(toList()));
 //        System.out.println(trajectories.stream().filter(tr -> tr.getKeyPoints().size() == 3).collect(toList()).size());
@@ -167,7 +181,7 @@ public class JavaMain {
                         currentTr.addKeyPoint(new TrajectoryPoint(
                                 (int) Math.round(currentTr.getRegressionX().predict(res)),
                                 (int) Math.round(currentTr.getRegressionY().predict(res)),
-                                (int) Math.round(res)));
+                                (int) Math.round(res)), null);
                         prevRes = res;
                     }
                 } catch (NoBracketingException nbe) {
@@ -203,7 +217,7 @@ public class JavaMain {
             currentTr.addKeyPoint(new TrajectoryPoint(
                     (int) Math.round(currentTr.getRegressionX().predict(tt)),
                     (int) Math.round(currentTr.getRegressionY().predict(tt)),
-                    tt));
+                    tt), null);
         }
 
         int stTime = currentTr.get(0).getTime();
@@ -213,13 +227,13 @@ public class JavaMain {
             currentTr.addKeyPoint(new TrajectoryPoint(
                     (int) Math.round(currentTr.getRegressionX().predict(stTime)),
                     (int) Math.round(currentTr.getRegressionY().predict(stTime)),
-                    stTime));
+                    stTime), null);
 //            add last point
         if (currentTr.getKeyPoints().stream().noneMatch(kp -> endTime - kp.getTime() < 2 * TIME_STEP))
             currentTr.addKeyPoint(new TrajectoryPoint(
                     (int) Math.round(currentTr.getRegressionX().predict(endTime)),
                     (int) Math.round(currentTr.getRegressionY().predict(endTime)),
-                    endTime));
+                    endTime), null);
 
 //        if small amount of trajectory points
 //        and trajectory length is more than 2 times bigger than amount of key points:
@@ -228,10 +242,11 @@ public class JavaMain {
             double interval = (currentTr.length() - 3) * 1.0 / diff;
             for (int i = 0; i < diff; i++) {
                 int tt = currentTr.get((int) Math.round(1 + interval * i)).getTime();
+                Integer bonusTT = (i < diff - 1) ? currentTr.get((int) Math.round(1 + interval * (i + 1))).getTime() : null;
                 currentTr.addKeyPoint(new TrajectoryPoint(
                         (int) Math.round(currentTr.getRegressionX().predict(tt)),
                         (int) Math.round(currentTr.getRegressionY().predict(tt)),
-                        tt));
+                        tt), bonusTT);
             }
         }
     }
