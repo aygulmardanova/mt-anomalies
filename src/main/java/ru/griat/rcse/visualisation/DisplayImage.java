@@ -127,6 +127,10 @@ public class DisplayImage {
                     drawExtraBoldTrajectoryPoint(img, kp);
                 });
             });
+//            this.i = 1;
+//            c.getClusterModel().getTrajectoryPoints().forEach(kp -> {
+//                drawExtraBoldTrajectoryPoint(img, kp);
+//            });
             increaseI();
         });
     }
