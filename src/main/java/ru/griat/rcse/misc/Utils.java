@@ -35,6 +35,10 @@ public class Utils {
     public static final int MAX_KP_COUNT = 9;
     public static final int TIME_STEP = 5;
 
+    public static final double STATIC_COEFF = 0.1;
+    public static final double ADAPT_COEFF = 20.0;
+    public static final int OUTPUT_CLUSTERS_COUNT = 20;
+
     public static String getImgFileName(String name) {
         return name + "." + INPUT_IMG_EXTENSION;
     }

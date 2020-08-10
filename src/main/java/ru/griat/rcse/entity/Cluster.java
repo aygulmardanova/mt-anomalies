@@ -11,6 +11,8 @@ public class Cluster {
 
     private List<Trajectory> trajectories;
 
+    private Boolean normal;
+
     private Trajectory clusterModel;
 
     public Cluster() {
@@ -53,6 +55,14 @@ public class Cluster {
 
     public void setClusterModel(Trajectory clusterModel) {
         this.clusterModel = clusterModel;
+    }
+
+    public Boolean getNormal() {
+        return normal;
+    }
+
+    public void setNormal(Boolean normal) {
+        this.normal = normal;
     }
 
     public void appendTrajectory(Trajectory trajectory) {

@@ -29,7 +29,7 @@ import static ru.griat.rcse.misc.Utils.*;
 public class JavaMain {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(JavaMain.class.getName());
-    private static final String EXPERIMENT_ID = "exp6";
+    private static final String EXPERIMENT_ID = "exp8";
 
     private static Clustering clustering;
 
@@ -54,7 +54,6 @@ public class JavaMain {
 //            displayTrajectories(getImgFileName(input), trajectories);
 
 //            calcDistances(trajectories, 0, 0, 0, 0);
-
 //            trajLCSSDistances = clustering.getTrajLCSSDistances();
 //            new CSVProcessing().writeCSV(trajLCSSDistances, 0, initialTrajectories.size(), 0, initialTrajectories.size(), EXPERIMENT_ID, input);
 
@@ -66,19 +65,13 @@ public class JavaMain {
 //            int clSt = 0;
 //            displayClusters(getImgFileName(input), clusters.subList(clSt, clSt + 1), false);
             List<Cluster> clusters = clustering.cluster(trajectories);
-//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 18 || cl.getId() == 19).collect(toList()), false);
-//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 18 || cl.getId() == 20).collect(toList()), false);
-//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 18 || cl.getId() == 23).collect(toList()), false);
-//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 19 || cl.getId() == 20).collect(toList()), false);
-//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 20 || cl.getId() == 23).collect(toList()), false);
-//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 20 || cl.getId() == 196).collect(toList()), false);
-//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 40 || cl.getId() == 44).collect(toList()), false);
-//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 40 || cl.getId() == 84).collect(toList()), false);
-//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> cl.getId() == 44 || cl.getId() == 84).collect(toList()), false);
-            for (int i = 0; i < clusters.size(); i++) {
-                displayClusters(getImgFileName(input), clusters.subList(i, i + 1), false);
-            }
-//            displayClusters(getImgFileName(input), clusters, false);
+//            for (int i = 0; i < clusters.size(); i++) {
+//                displayClusters(getImgFileName(input), clusters.subList(i, i + 1), false);
+//            }
+//            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> !cl.getNormal()).collect(toList()), false);
+            displayClusters(getImgFileName(input), clusters, false);
+//            List<Trajectory> inputTrajectories = new ArrayList<>();
+
         }
     }
 

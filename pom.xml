@@ -15,6 +15,7 @@
         <commons.version>2.6</commons.version>
         <commons.math.version>3.4.1</commons.math.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <guava.version>27.0.1-android</guava.version>
     </properties>
 
     <dependencies>
@@ -42,8 +43,11 @@
             <version>${commons.math.version}</version>
         </dependency>
 
-        <!--        STARK        -->
-<!--    stark.jar: $STARK_DIR$/target/scala-2.11/stark.jar    -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
 
     </dependencies>
 

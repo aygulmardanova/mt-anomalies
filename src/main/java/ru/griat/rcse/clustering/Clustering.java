@@ -1,5 +1,6 @@
 package ru.griat.rcse.clustering;
 
+import com.google.common.math.Quantiles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.griat.rcse.entity.Cluster;
@@ -10,13 +11,16 @@ import ru.griat.rcse.misc.LinkageMethod;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.Math.*;
+import static ru.griat.rcse.misc.Utils.ADAPT_COEFF;
+import static ru.griat.rcse.misc.Utils.OUTPUT_CLUSTERS_COUNT;
+import static ru.griat.rcse.misc.Utils.STATIC_COEFF;
 
 public class Clustering {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Clustering.class.getName());
-    private static final int OUTPUT_CLUSTERS_COUNT = 8;
 
     /*
      * Stores clusters in a list.
@@ -56,7 +60,7 @@ public class Clustering {
         this.minY = minY;
         this.maxY = maxY;
         this.cameraPoint = new TrajectoryPoint((int) Math.round(0.25 * maxX), (int) Math.round(0.95 * maxY));
-        calcEuclDistancesToCP(trajectories);
+//        calcEuclDistancesToCP(trajectories);
 //        try {
 //            new DisplayImage().displayAndSave(getImgFileName("1"), cameraPoint, false);
 //        } catch (IOException e) {
@@ -65,7 +69,6 @@ public class Clustering {
     }
 
     private void calcEuclDistancesToCP(List<Trajectory> trajectories) {
-        double coeff = 20.0;
         final double[] maxEpsilonX = {0.0};
         final double[] maxEpsilonY = {0.0};
         final double[] minEpsilonX = {Double.MAX_VALUE};
@@ -74,9 +77,9 @@ public class Clustering {
                 tr.getKeyPoints().forEach(kp -> {
                     double cpDist = kp.distanceTo(cameraPoint);
                     kp.setCpDist(cpDist);
-                    double epsilonX = coeff * (maxX - minX) / cpDist;
+                    double epsilonX = ADAPT_COEFF * (maxX - minX) / cpDist;
                     kp.setEpsilonX(epsilonX);
-                    double epsilonY = coeff * (maxY - minY) / cpDist;
+                    double epsilonY = ADAPT_COEFF * (maxY - minY) / cpDist;
                     kp.setEpsilonY(epsilonY);
 
                     if (epsilonX > maxEpsilonX[0])
@@ -118,6 +121,7 @@ public class Clustering {
         whileCluster(OUTPUT_CLUSTERS_COUNT);
         printClusters();
         validateClusters();
+        classifyClusters();
         clustersModeling();
         System.out.println(clusters.size() + " clusters in total");
         for (int i = 0; i < clusters.size(); i++) {
@@ -165,7 +169,7 @@ public class Clustering {
 //                            && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2))
                     ) {
                         if (clusters.size() > 25 && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2))
-                                || clusters.size() <= 29 && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] <= 0.91
+                                || clusters.size() <= 50 && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] <= 0.91
                                 || clusters.size() <= 25 ) {
                         minClustDist = clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()];
                         id1 = i1;
@@ -240,10 +244,10 @@ public class Clustering {
         if (m == 0 || n == 0) {
             return 0.0;
         }
-        TrajectoryPoint tp1 = t1.getKeyPoints().get(m - 1);
-        TrajectoryPoint tp2 = t2.getKeyPoints().get(n - 1);
-        epsilonX = getEpsilonX(tp1, tp2, LinkageMethod.AVERAGE);
-        epsilonY = getEpsilonY(tp1, tp2, LinkageMethod.AVERAGE);
+//        TrajectoryPoint tp1 = t1.getKeyPoints().get(m - 1);
+//        TrajectoryPoint tp2 = t2.getKeyPoints().get(n - 1);
+//        epsilonX = getEpsilonX(tp1, tp2, LinkageMethod.AVERAGE);
+//        epsilonY = getEpsilonY(tp1, tp2, LinkageMethod.AVERAGE);
 
 //      check last trajectory point (of each trajectory-part recursively)
 //      according to [8]: delta and epsilon as thresholds for X- and Y-axes respectively
@@ -292,7 +296,7 @@ public class Clustering {
      * @return ε value
      */
     private Double getEpsilonX(int m, int n) {
-        return 0.1 * (maxX - minX);
+        return STATIC_COEFF * (maxX - minX);
     }
 
     private Double getEpsilonX(TrajectoryPoint tp1, TrajectoryPoint tp2, LinkageMethod method) {
@@ -304,7 +308,7 @@ public class Clustering {
             case MAXIMUM:
                 return Math.max(tp1.getEpsilonX(), tp2.getEpsilonX());
         }
-        return 0.1 * (maxX - minX);
+        return STATIC_COEFF * (maxX - minX);
     }
 
     /**
@@ -315,7 +319,7 @@ public class Clustering {
      * @return ε value
      */
     private Double getEpsilonY(int m, int n) {
-        return 0.1 * (maxY - minY);
+        return STATIC_COEFF * (maxY - minY);
     }
 
     private Double getEpsilonY(TrajectoryPoint tp1, TrajectoryPoint tp2, LinkageMethod method) {
@@ -327,7 +331,7 @@ public class Clustering {
             case MAXIMUM:
                 return Math.max(tp1.getEpsilonY(), tp2.getEpsilonY());
         }
-        return 0.1 * (maxY - minY);
+        return STATIC_COEFF * (maxY - minY);
     }
 
     /**
@@ -470,6 +474,14 @@ public class Clustering {
             }
             c.setClusterModel(model);
         }
+    }
+
+    private void classifyClusters() {
+        List<Integer> cardinalities = clusters.stream().map(cl -> cl.getTrajectories().size()).sorted().collect(Collectors.toList());
+        double limit = Quantiles.quartiles().index(1).compute(cardinalities);
+        clusters.forEach(cl -> {
+            cl.setNormal(cl.getTrajectories().size() >= limit);
+        });
     }
 
 }

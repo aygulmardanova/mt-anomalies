@@ -44,3 +44,18 @@ DI = 0.64
 new keyPoints
 DI = 0.60
 but more accurate
+
+-----------------------
+6. exp6
+
+coeff = 20.0
+
+-----------------------
+7. exp7
+
+constant epsX, epsY, coeff 0.15 * (max - min)
+
+-----------------------
+7. exp8
+
+constant epsX, epsY, coeff 0.1 * (max - min)
