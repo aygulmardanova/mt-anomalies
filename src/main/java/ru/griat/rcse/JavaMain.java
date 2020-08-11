@@ -29,7 +29,7 @@ import static ru.griat.rcse.misc.Utils.*;
 public class JavaMain {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(JavaMain.class.getName());
-    private static final String EXPERIMENT_ID = "exp8";
+    private static final String EXPERIMENT_ID = "exp6";
 
     private static Clustering clustering;
 
