@@ -14,6 +14,7 @@ import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
 import ru.griat.rcse.exception.TrajectoriesParserException;
+import ru.griat.rcse.misc.Utils;
 import ru.griat.rcse.parsing.TrajectoriesParser;
 import ru.griat.rcse.visualisation.DisplayImage;
 
@@ -29,7 +30,6 @@ import static ru.griat.rcse.misc.Utils.*;
 public class JavaMain {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(JavaMain.class.getName());
-    private static final String EXPERIMENT_ID = "exp6";
 
     private static Clustering clustering;
 
@@ -37,21 +37,22 @@ public class JavaMain {
 
         for (String input : INPUT_FILE_NAMES_FIRST) {
             List<Trajectory> trajectories = parseTrajectories(getFileName(input));
+            List<Trajectory> trajectories2 = parseTrajectories(getFileName("2"));
             List<Trajectory> initialTrajectories = trajectories;
             Double[][] trajLCSSDistances;
 //            displayTrajectories(getImgFileName(input), trajectories);
 //            displayTrajectories(getImgFileName(input), trajectories.stream().filter(tr -> tr.length() <= MIN_LENGTH || tr.totalDist() < MIN_TOTAL_DIST).collect(toList()));
 
             trajectories = trajectories.stream().filter(tr -> tr.length() > MIN_LENGTH && tr.totalDist() >= MIN_TOTAL_DIST).collect(toList());
+//            displayTrajectories(getImgFileName(input), trajectories, List.of(111, 200));
 //            displayTrajectories(getImgFileName(input), trajectories);
 
-//            int ind = 10;
             performRegression(trajectories, input);
+            performRegression(trajectories2, input);
 //            displayTrajectories(getImgFileName(input), trajectories, List.of(0, 2, 6, 8, 13, 70, 176, 180));
 
             clustering = new Clustering(initialTrajectories);
             setInputBorders(initialTrajectories);
-//            displayTrajectories(getImgFileName(input), trajectories);
 
 //            calcDistances(trajectories, 0, 0, 0, 0);
 //            trajLCSSDistances = clustering.getTrajLCSSDistances();
@@ -60,19 +61,41 @@ public class JavaMain {
             trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
             new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
             clustering.setTrajLCSSDistances(trajLCSSDistances);
-//            displayTrajectories(getImgFileName(input), trajectories, filterTrajWithDistLessThan(trajectories, trajLCSSDistances, 1.0));
 
-//            int clSt = 0;
-//            displayClusters(getImgFileName(input), clusters.subList(clSt, clSt + 1), false);
             List<Cluster> clusters = clustering.cluster(trajectories);
 //            for (int i = 0; i < clusters.size(); i++) {
 //                displayClusters(getImgFileName(input), clusters.subList(i, i + 1), false);
 //            }
 //            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> !cl.getNormal()).collect(toList()), false);
-            displayClusters(getImgFileName(input), clusters, false);
-//            List<Trajectory> inputTrajectories = new ArrayList<>();
+//            displayClusters(getImgFileName(input), clusters.subList(1, 2), false);
 
+            List<Integer> trIds = List.of(100);
+            List<Trajectory> inputTrajectories = trajectories.stream().filter(tr -> trIds.contains(tr.getId())).collect(toList());
+//            clustering.classifyTrajectories(trajectories2);
+            clustering.classifyTrajectories(inputTrajectories);
+
+            inputTrajectories = generateTestTrajectories2(trajectories);
+//            clustering.classifyTrajectories(inputTrajectories);
         }
+    }
+
+    private static List<Trajectory> generateTestTrajectories2(List<Trajectory> trajectories) throws IOException {
+        List<Trajectory> tList = new ArrayList<>();
+        int l1 = 30;
+        TrajectoryPoint cp = clustering.getCameraPoint();
+        List<TrajectoryPoint> tpList1 = new ArrayList<>();
+        int coeffX = 30;
+        int coeffY = 10;
+        for (int i = 0; i < l1; i++) {
+//            tpList1.add(new TrajectoryPoint(cp.getX() + i * 10, cp.getY() + i * 10, i * TIME_STEP));
+            tpList1.add(new TrajectoryPoint(cp.getX() + i * coeffX, cp.getY() - i * coeffY, i * TIME_STEP));
+        }
+        Trajectory t1 = new Trajectory(0, tpList1);
+
+        tList.addAll(List.of(t1));
+        performRegression(tList, null);
+//        t1.setTrajectoryPoints(t1.getKeyPoints());
+        return tList;
     }
 
     private static void performRegression(List<Trajectory> trajectories, String input) throws IOException {

@@ -7,16 +7,21 @@ import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
 import ru.griat.rcse.misc.LinkageMethod;
+import ru.griat.rcse.visualisation.DisplayImage;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.*;
 import static ru.griat.rcse.misc.Utils.ADAPT_COEFF;
+import static ru.griat.rcse.misc.Utils.INPUT_FILE_NAMES_FIRST;
 import static ru.griat.rcse.misc.Utils.OUTPUT_CLUSTERS_COUNT;
 import static ru.griat.rcse.misc.Utils.STATIC_COEFF;
+import static ru.griat.rcse.misc.Utils.getImgFileName;
 
 public class Clustering {
 
@@ -36,6 +41,10 @@ public class Clustering {
     private int minY;
     private int maxY;
     private TrajectoryPoint cameraPoint;
+
+    public TrajectoryPoint getCameraPoint() {
+        return cameraPoint;
+    }
 
     public Clustering(List<Trajectory> trajectories) {
         clusters = new ArrayList<>();
@@ -60,7 +69,7 @@ public class Clustering {
         this.minY = minY;
         this.maxY = maxY;
         this.cameraPoint = new TrajectoryPoint((int) Math.round(0.25 * maxX), (int) Math.round(0.95 * maxY));
-//        calcEuclDistancesToCP(trajectories);
+        calcEuclDistancesToCP(trajectories);
 //        try {
 //            new DisplayImage().displayAndSave(getImgFileName("1"), cameraPoint, false);
 //        } catch (IOException e) {
@@ -69,33 +78,33 @@ public class Clustering {
     }
 
     private void calcEuclDistancesToCP(List<Trajectory> trajectories) {
-        final double[] maxEpsilonX = {0.0};
-        final double[] maxEpsilonY = {0.0};
-        final double[] minEpsilonX = {Double.MAX_VALUE};
-        final double[] minEpsilonY = {Double.MAX_VALUE};
+//        final double[] maxEpsilonX = {0.0};
+//        final double[] maxEpsilonY = {0.0};
+//        final double[] minEpsilonX = {Double.MAX_VALUE};
+//        final double[] minEpsilonY = {Double.MAX_VALUE};
         trajectories.forEach(tr ->
                 tr.getKeyPoints().forEach(kp -> {
                     double cpDist = kp.distanceTo(cameraPoint);
                     kp.setCpDist(cpDist);
                     double epsilonX = ADAPT_COEFF * (maxX - minX) / cpDist;
-                    kp.setEpsilonX(epsilonX);
+                    kp.setEpsilonX(cpDist < 250 ? 300.0 : epsilonX);
                     double epsilonY = ADAPT_COEFF * (maxY - minY) / cpDist;
-                    kp.setEpsilonY(epsilonY);
+                    kp.setEpsilonY(cpDist < 250 ? 150.0 : epsilonY);
 
-                    if (epsilonX > maxEpsilonX[0])
-                        maxEpsilonX[0] = epsilonX;
-                    if (epsilonX < minEpsilonX[0])
-                        minEpsilonX[0] = epsilonX;
-                    if (epsilonY > maxEpsilonY[0])
-                        maxEpsilonY[0] = epsilonY;
-                    if (epsilonY < minEpsilonY[0])
-                        minEpsilonY[0] = epsilonY;
+//                    if (epsilonX > maxEpsilonX[0])
+//                        maxEpsilonX[0] = epsilonX;
+//                    if (epsilonX < minEpsilonX[0])
+//                        minEpsilonX[0] = epsilonX;
+//                    if (epsilonY > maxEpsilonY[0])
+//                        maxEpsilonY[0] = epsilonY;
+//                    if (epsilonY < minEpsilonY[0])
+//                        minEpsilonY[0] = epsilonY;
                 })
         );
-        System.out.println(String.format("max for X: %.3f (pixels)", maxEpsilonX[0]));
-        System.out.println(String.format("max for Y: %.3f (pixels)", maxEpsilonY[0]));
-        System.out.println(String.format("min for X: %.3f (pixels)", minEpsilonX[0]));
-        System.out.println(String.format("min for Y: %.3f (pixels)", minEpsilonY[0]));
+//        System.out.println(String.format("max for X: %.3f (pixels)", maxEpsilonX[0]));
+//        System.out.println(String.format("max for Y: %.3f (pixels)", maxEpsilonY[0]));
+//        System.out.println(String.format("min for X: %.3f (pixels)", minEpsilonX[0]));
+//        System.out.println(String.format("min for Y: %.3f (pixels)", minEpsilonY[0]));
     }
 
     /**
@@ -131,6 +140,37 @@ public class Clustering {
             }
         }
         return clusters;
+    }
+
+    public void classifyTrajectories(List<Trajectory> inputTrajectories) {
+        double lcssMax = 0.85;
+        inputTrajectories.forEach(it -> {
+            final double[] minLcss = {1.0};
+            final Cluster[] closestCluster = {null};
+            calcEuclDistancesToCP(inputTrajectories);
+
+            System.out.println(String.format("------tr %s-----", it.getId()));
+            clusters.forEach(cl -> {
+                double curLcss = calcLCSSDist(it, cl.getClusterModel());
+                if (curLcss < minLcss[0]) {
+                    minLcss[0] = curLcss;
+                    closestCluster[0] = cl;
+                }
+                System.out.println(String.format("dist to cl %s = %.2f", cl.getId(), curLcss));
+            });
+            if (closestCluster[0] == null || minLcss[0] > lcssMax) {
+                System.out.println("anomalous trajectory");
+                try {
+                    new DisplayImage().displayClusterAndTrajectory(getImgFileName(INPUT_FILE_NAMES_FIRST[0]), Collections.emptyList(), it);
+                } catch (IOException ignored) {}
+            } else {
+                System.out.println(String.format("closest cl is %s", closestCluster[0].getId()));
+                System.out.println(closestCluster[0].getNormal() ? "normal trajectory" : "anomalous trajectory");
+                try {
+                    new DisplayImage().displayClusterAndTrajectory(getImgFileName(INPUT_FILE_NAMES_FIRST[0]), closestCluster[0], it);
+                } catch (IOException ignored) {}
+            }
+        });
     }
 
     public void initClusters(List<Trajectory> trajectories) {
@@ -244,10 +284,10 @@ public class Clustering {
         if (m == 0 || n == 0) {
             return 0.0;
         }
-//        TrajectoryPoint tp1 = t1.getKeyPoints().get(m - 1);
-//        TrajectoryPoint tp2 = t2.getKeyPoints().get(n - 1);
-//        epsilonX = getEpsilonX(tp1, tp2, LinkageMethod.AVERAGE);
-//        epsilonY = getEpsilonY(tp1, tp2, LinkageMethod.AVERAGE);
+        TrajectoryPoint tp1 = t1.getKeyPoints().get(m - 1);
+        TrajectoryPoint tp2 = t2.getKeyPoints().get(n - 1);
+        epsilonX = getEpsilonX(tp1, tp2, LinkageMethod.AVERAGE);
+        epsilonY = getEpsilonY(tp1, tp2, LinkageMethod.AVERAGE);
 
 //      check last trajectory point (of each trajectory-part recursively)
 //      according to [8]: delta and epsilon as thresholds for X- and Y-axes respectively

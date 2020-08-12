@@ -16,8 +16,9 @@ public class Utils {
     public static final Path OUTPUT_IMG_DIR = Paths.get(RESOURCES_PATH.toString(), "output");
     public static final Path CSV_DIR = Paths.get(RESOURCES_PATH.toString(), "csv");
 
+    public static final String EXPERIMENT_ID = "exp6";
     public static final String[] INPUT_FILE_NAMES = {"1", "2", "3", "4"};
-    public static final String[] INPUT_FILE_NAMES_FIRST = {"2"};
+    public static final String[] INPUT_FILE_NAMES_FIRST = {"1"};
     public static final String INPUT_FILE_EXTENSION = "txt";
     public static final String INPUT_IMG_EXTENSION = "jpg";
     public static final String CSV_EXTENSION = "csv";
@@ -37,7 +38,7 @@ public class Utils {
 
     public static final double STATIC_COEFF = 0.1;
     public static final double ADAPT_COEFF = 20.0;
-    public static final int OUTPUT_CLUSTERS_COUNT = 20;
+    public static final int OUTPUT_CLUSTERS_COUNT = 8;
 
     public static String getImgFileName(String name) {
         return name + "." + INPUT_IMG_EXTENSION;

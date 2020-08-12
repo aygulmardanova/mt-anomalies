@@ -13,7 +13,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
+import static com.google.common.collect.Iterables.isEmpty;
+import static org.apache.commons.lang.ArrayUtils.isNotEmpty;
 import static ru.griat.rcse.misc.Utils.*;
 
 public class DisplayImage {
@@ -45,6 +48,22 @@ public class DisplayImage {
         drawClusters(img, clusters);
         displayImage(img);
         if (save) saveImage(outputFileName, subDir, img);
+    }
+
+    public void displayClusterAndTrajectory(String inputFileName,
+                                       Cluster cluster, Trajectory trajectory) throws IOException {
+        BufferedImage img = ImageIO.read(new File(getFileDir(INPUT_FILE_DIR, inputFileName)));
+
+        drawClusterAndModelAndTrajectory(img, List.of(cluster), trajectory);
+        displayImage(img);
+    }
+
+    public void displayClusterAndTrajectory(String inputFileName,
+                                            List<Cluster> clusters, Trajectory trajectory) throws IOException {
+        BufferedImage img = ImageIO.read(new File(getFileDir(INPUT_FILE_DIR, inputFileName)));
+
+        drawClusterAndModelAndTrajectory(img, clusters, trajectory);
+        displayImage(img);
     }
 
     public void displayAndSave(String inputFileName, String outputFileName, String subDir,
@@ -133,6 +152,28 @@ public class DisplayImage {
 //            });
             increaseI();
         });
+    }
+
+    private void drawClusterAndModelAndTrajectory(BufferedImage img, List<Cluster> clusters, Trajectory trajectory) {
+        this.i = 0;
+        if (!isEmpty(clusters)) {
+
+            clusters.forEach(cl -> {
+                cl.getTrajectories().forEach(t -> {
+                    t.getTrajectoryPoints().forEach(tp ->
+                            drawBoldTrajectoryPoint(img, tp));
+                });
+//                this.i = 1;
+                cl.getClusterModel().getTrajectoryPoints().forEach(kp -> {
+                    drawExtraBoldTrajectoryPoint(img, kp);
+                });
+                increaseI();
+            });
+        }
+        this.i = 2;
+        trajectory.getTrajectoryPoints().forEach(tp ->
+                drawExtraBoldTrajectoryPoint(img, tp));
+
     }
 
     private void increaseI() {
