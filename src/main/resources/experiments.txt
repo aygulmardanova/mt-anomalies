@@ -59,3 +59,15 @@ constant epsX, epsY, coeff 0.15 * (max - min)
 8. exp8
 
 constant epsX, epsY, coeff 0.1 * (max - min)
+
+9. exp9
+
+filtered
+adaptive epsilon 20.0
+keyPoints only: solutions, border points
+
+10. exp10
+
+filtered
+static epsilon
+keyPoints only: solutions, border points

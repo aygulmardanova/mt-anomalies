@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import static java.lang.Math.*;
 import static ru.griat.rcse.misc.Utils.ADAPT_COEFF;
 import static ru.griat.rcse.misc.Utils.INPUT_FILE_NAMES_FIRST;
+import static ru.griat.rcse.misc.Utils.IS_ADAPTIVE;
 import static ru.griat.rcse.misc.Utils.OUTPUT_CLUSTERS_COUNT;
 import static ru.griat.rcse.misc.Utils.STATIC_COEFF;
 import static ru.griat.rcse.misc.Utils.getImgFileName;
@@ -77,6 +78,12 @@ public class Clustering {
 //        }
     }
 
+    /**
+     * For each trajectory in @trajectories calc the adaptive epsilonX and epsilonY
+     * for each trajectory point
+     *
+     * @param trajectories
+     */
     private void calcEuclDistancesToCP(List<Trajectory> trajectories) {
 //        final double[] maxEpsilonX = {0.0};
 //        final double[] maxEpsilonY = {0.0};
@@ -142,8 +149,9 @@ public class Clustering {
         return clusters;
     }
 
-    public void classifyTrajectories(List<Trajectory> inputTrajectories) {
+    public void classifyTrajectories(List<Trajectory> inputTrajectories) throws IOException {
         double lcssMax = 0.85;
+        List<Trajectory> anomalousTrajectories = new ArrayList<>();
         inputTrajectories.forEach(it -> {
             final double[] minLcss = {1.0};
             final Cluster[] closestCluster = {null};
@@ -160,17 +168,19 @@ public class Clustering {
             });
             if (closestCluster[0] == null || minLcss[0] > lcssMax) {
                 System.out.println("anomalous trajectory");
-                try {
-                    new DisplayImage().displayClusterAndTrajectory(getImgFileName(INPUT_FILE_NAMES_FIRST[0]), Collections.emptyList(), it);
-                } catch (IOException ignored) {}
+                anomalousTrajectories.add(it);
+//                try {
+//                    new DisplayImage().displayClusterAndTrajectory(getImgFileName(INPUT_FILE_NAMES_FIRST[0]), Collections.emptyList(), it);
+//                } catch (IOException ignored) {}
             } else {
                 System.out.println(String.format("closest cl is %s", closestCluster[0].getId()));
                 System.out.println(closestCluster[0].getNormal() ? "normal trajectory" : "anomalous trajectory");
-                try {
-                    new DisplayImage().displayClusterAndTrajectory(getImgFileName(INPUT_FILE_NAMES_FIRST[0]), closestCluster[0], it);
-                } catch (IOException ignored) {}
+//                try {
+//                    new DisplayImage().displayClusterAndTrajectory(getImgFileName(INPUT_FILE_NAMES_FIRST[0]), closestCluster[0], it);
+//                } catch (IOException ignored) {}
             }
         });
+        new DisplayImage().displayAndSave(getImgFileName("1"), null, null, anomalousTrajectories, false);
     }
 
     public void initClusters(List<Trajectory> trajectories) {
@@ -208,13 +218,14 @@ public class Clustering {
                             && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] <= minClustDist
 //                            && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2))
                     ) {
-                        if (clusters.size() > 25 && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2))
-                                || clusters.size() <= 50 && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] <= 0.91
-                                || clusters.size() <= 25 ) {
-                        minClustDist = clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()];
-                        id1 = i1;
-                        id2 = i2;
-                        }
+//                        FIXME: for normal clustering uncomment lines
+//                        if (clusters.size() > 25 && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2))
+//                                || clusters.size() <= 50 && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] <= 0.91
+//                                || clusters.size() <= 25) {
+                            minClustDist = clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()];
+                            id1 = i1;
+                            id2 = i2;
+//                        }
                     }
                 }
             }
@@ -284,10 +295,13 @@ public class Clustering {
         if (m == 0 || n == 0) {
             return 0.0;
         }
-        TrajectoryPoint tp1 = t1.getKeyPoints().get(m - 1);
-        TrajectoryPoint tp2 = t2.getKeyPoints().get(n - 1);
-        epsilonX = getEpsilonX(tp1, tp2, LinkageMethod.AVERAGE);
-        epsilonY = getEpsilonY(tp1, tp2, LinkageMethod.AVERAGE);
+
+        if (IS_ADAPTIVE) {
+            TrajectoryPoint tp1 = t1.getKeyPoints().get(m - 1);
+            TrajectoryPoint tp2 = t2.getKeyPoints().get(n - 1);
+            epsilonX = getEpsilonX(tp1, tp2, LinkageMethod.AVERAGE);
+            epsilonY = getEpsilonY(tp1, tp2, LinkageMethod.AVERAGE);
+        }
 
 //      check last trajectory point (of each trajectory-part recursively)
 //      according to [8]: delta and epsilon as thresholds for X- and Y-axes respectively
@@ -409,7 +423,6 @@ public class Clustering {
      */
     private Double calcClustersDist(Cluster cluster1, Cluster cluster2, LinkageMethod method) {
         double dist = 0.0;
-//        single linkage
         switch (method) {
             case SINGLE: {
                 dist = Double.MAX_VALUE;
