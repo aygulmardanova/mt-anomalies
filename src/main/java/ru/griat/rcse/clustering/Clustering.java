@@ -296,6 +296,7 @@ public class Clustering {
             return 0.0;
         }
 
+//        calculate adaptive
         if (IS_ADAPTIVE) {
             TrajectoryPoint tp1 = t1.getKeyPoints().get(m - 1);
             TrajectoryPoint tp2 = t2.getKeyPoints().get(n - 1);
