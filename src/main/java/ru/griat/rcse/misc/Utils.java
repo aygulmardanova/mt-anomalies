@@ -3,12 +3,14 @@ package ru.griat.rcse.misc;
 import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
+import ru.griat.rcse.misc.enums.ApproximationMethod;
 import ru.griat.rcse.visualisation.DisplayImage;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -42,6 +44,7 @@ public class Utils {
     public static final int MAX_KP_COUNT = 9;
     public static final int TIME_STEP = 5;
 
+    public static final ApproximationMethod APPROXIMATION_METHOD = ApproximationMethod.REGRESSION;
     public static final boolean IS_ADAPTIVE = false;
     public static final double STATIC_COEFF = 0.15;
     public static final double ADAPT_COEFF = 20.0;
@@ -69,6 +72,18 @@ public class Utils {
             csvPath.toFile().createNewFile();
 
         return csvPath.toString();
+    }
+
+    public static List<TrajectoryPoint> getTrajectoryPoints(Trajectory trajectory) {
+        switch (APPROXIMATION_METHOD) {
+            case NONE:
+                return trajectory.getTrajectoryPoints();
+            case REGRESSION:
+                return trajectory.getKeyPoints();
+            case RDP:
+                return trajectory.getRdpPoints();
+        }
+        return Collections.emptyList();
     }
 
     public static boolean checkTPValidity(TrajectoryPoint tp) {

@@ -1,6 +1,6 @@
 package ru.griat.rcse.entity;
 
-import ru.griat.rcse.approximation.PolynomialRegression;
+import ru.griat.rcse.approximation.polynomial_regression.PolynomialRegression;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +20,7 @@ public class Trajectory implements Cloneable {
     private PolynomialRegression regressionY;
 
     private List<TrajectoryPoint> keyPoints;
+    private List<TrajectoryPoint> rdpPoints;
 
     private double avgSpeed;
 
@@ -39,6 +40,7 @@ public class Trajectory implements Cloneable {
         this.avgSpeed = avgSpeed;
         this.avgAcceleration = avgAcceleration;
         this.keyPoints = new ArrayList<>();
+        this.rdpPoints = new ArrayList<>();
     }
 
     @Override
@@ -47,8 +49,11 @@ public class Trajectory implements Cloneable {
                 .map(TrajectoryPoint::clone).collect(toList());
         List<TrajectoryPoint> kpClone = this.getKeyPoints().stream()
                 .map(TrajectoryPoint::clone).collect(toList());
+        List<TrajectoryPoint> rdpClone = this.getRdpPoints().stream()
+                .map(TrajectoryPoint::clone).collect(toList());
         Trajectory tClone = new Trajectory(this.getId(), tpClone, this.getAvgSpeed(), this.getAvgAcceleration());
         tClone.setKeyPoints(kpClone);
+        tClone.setRdpPoints(rdpClone);
         return tClone;
     }
 
@@ -112,6 +117,18 @@ public class Trajectory implements Cloneable {
         }
         if (!keyPoints.contains(keyPoint) && checkTPValidity(keyPoint))
             this.keyPoints.add(keyPoint);
+    }
+
+    public List<TrajectoryPoint> getRdpPoints() {
+        return rdpPoints;
+    }
+
+    public void setRdpPoints(List<TrajectoryPoint> rdpPoints) {
+        this.rdpPoints = rdpPoints;
+    }
+
+    public void addRDPPoint(TrajectoryPoint rdpPoint) {
+        this.rdpPoints.add(rdpPoint);
     }
 
     public Integer length() {

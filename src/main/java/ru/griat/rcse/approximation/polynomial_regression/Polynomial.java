@@ -1,4 +1,4 @@
-package ru.griat.rcse.approximation;
+package ru.griat.rcse.approximation.polynomial_regression;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.exception.NoDataException;

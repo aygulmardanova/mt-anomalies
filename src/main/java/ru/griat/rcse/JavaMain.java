@@ -1,23 +1,15 @@
 package ru.griat.rcse;
 
-import org.apache.commons.math3.analysis.solvers.BaseAbstractUnivariateSolver;
-import org.apache.commons.math3.analysis.solvers.BisectionSolver;
-import org.apache.commons.math3.analysis.solvers.LaguerreSolver;
-import org.apache.commons.math3.exception.NoBracketingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.griat.rcse.approximation.Polynomial;
-import ru.griat.rcse.approximation.PolynomialRegression;
-import ru.griat.rcse.approximation.RegressionPerformer;
+import ru.griat.rcse.approximation.polynomial_regression.RegressionPerformer;
 import ru.griat.rcse.clustering.Clustering;
 import ru.griat.rcse.csv.CSVProcessing;
 import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
 import ru.griat.rcse.exception.TrajectoriesParserException;
-import ru.griat.rcse.misc.Utils;
 import ru.griat.rcse.parsing.TrajectoriesParser;
-import ru.griat.rcse.visualisation.DisplayImage;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -113,7 +105,6 @@ public class JavaMain {
                 if (t1.getId() != t2.getId() && t1.getId() < t2.getId()) {
                     logCalcDist(t1, t2);
                 }
-
             }
         }
     }

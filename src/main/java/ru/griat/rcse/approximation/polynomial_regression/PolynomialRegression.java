@@ -1,4 +1,4 @@
-package ru.griat.rcse.approximation;
+package ru.griat.rcse.approximation.polynomial_regression;
 
 // https://algs4.cs.princeton.edu/14analysis/PolynomialRegression.java.html
 

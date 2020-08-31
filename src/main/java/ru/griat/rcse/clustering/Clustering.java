@@ -6,23 +6,22 @@ import org.slf4j.LoggerFactory;
 import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
-import ru.griat.rcse.misc.LinkageMethod;
+import ru.griat.rcse.misc.enums.LinkageMethod;
 import ru.griat.rcse.visualisation.DisplayImage;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.*;
 import static ru.griat.rcse.misc.Utils.ADAPT_COEFF;
-import static ru.griat.rcse.misc.Utils.INPUT_FILE_NAMES_FIRST;
 import static ru.griat.rcse.misc.Utils.IS_ADAPTIVE;
 import static ru.griat.rcse.misc.Utils.OUTPUT_CLUSTERS_COUNT;
 import static ru.griat.rcse.misc.Utils.STATIC_COEFF;
 import static ru.griat.rcse.misc.Utils.getImgFileName;
+import static ru.griat.rcse.misc.Utils.getTrajectoryPoints;
 
 public class Clustering {
 
@@ -138,7 +137,7 @@ public class Clustering {
         printClusters();
         validateClusters();
         classifyClusters();
-        clustersModeling();
+        modelClusters();
         System.out.println(clusters.size() + " clusters in total");
         for (int i = 0; i < clusters.size(); i++) {
             for (int j = i + 1; j < clusters.size(); j++) {
@@ -263,8 +262,8 @@ public class Clustering {
      * @return LCSS distance for t1 and t2
      */
     public Double calcLCSSDist(Trajectory t1, Trajectory t2) {
-        int m = t1.getKeyPoints().size();
-        int n = t2.getKeyPoints().size();
+        int m = getTrajectoryPoints(t1).size();
+        int n = getTrajectoryPoints(t2).size();
 
         double delta = getDelta(m, n);
         double epsilonX = getEpsilonX(m, n);
@@ -289,8 +288,10 @@ public class Clustering {
      * @return LCSS for t1 and t2
      */
     private Double calcLCSS(Trajectory t1, Trajectory t2, Double delta, Double epsilonX, Double epsilonY) {
-        int m = t1.getKeyPoints().size();
-        int n = t2.getKeyPoints().size();
+        List<TrajectoryPoint> trajectoryPoints1 = getTrajectoryPoints(t1);
+        List<TrajectoryPoint> trajectoryPoints2 = getTrajectoryPoints(t2);
+        int m = trajectoryPoints1.size();
+        int n = trajectoryPoints2.size();
 
         if (m == 0 || n == 0) {
             return 0.0;
@@ -298,8 +299,8 @@ public class Clustering {
 
 //        calculate adaptive
         if (IS_ADAPTIVE) {
-            TrajectoryPoint tp1 = t1.getKeyPoints().get(m - 1);
-            TrajectoryPoint tp2 = t2.getKeyPoints().get(n - 1);
+            TrajectoryPoint tp1 = trajectoryPoints1.get(m - 1);
+            TrajectoryPoint tp2 = trajectoryPoints2.get(n - 1);
             epsilonX = getEpsilonX(tp1, tp2, LinkageMethod.AVERAGE);
             epsilonY = getEpsilonY(tp1, tp2, LinkageMethod.AVERAGE);
         }
@@ -308,8 +309,8 @@ public class Clustering {
 //      according to [8]: delta and epsilon as thresholds for X- and Y-axes respectively
 //      Then the abscissa difference and ordinate difference are less than thresholds (they are relatively close to each other)
 //      they are considered similar and LCSS distance is increased by 1
-        if (abs(t1.getKeyPoints().get(m - 1).getX() - t2.getKeyPoints().get(n - 1).getX()) < epsilonX
-                && abs(t1.getKeyPoints().get(m - 1).getY() - t2.getKeyPoints().get(n - 1).getY()) < epsilonY
+        if (abs(trajectoryPoints1.get(m - 1).getX() - trajectoryPoints2.get(n - 1).getX()) < epsilonX
+                && abs(trajectoryPoints1.get(m - 1).getY() - trajectoryPoints2.get(n - 1).getY()) < epsilonY
                 && abs(m - n) <= delta) {
             return 1 + calcLCSS(head(t1), head(t2), delta, epsilonX, epsilonY);
         } else {
@@ -328,7 +329,7 @@ public class Clustering {
      */
     private Trajectory head(Trajectory t) {
         Trajectory tClone = t.clone();
-        tClone.getKeyPoints().remove(tClone.getKeyPoints().size() - 1);
+        getTrajectoryPoints(tClone).remove(getTrajectoryPoints(tClone).size() - 1);
         return tClone;
     }
 
@@ -465,14 +466,6 @@ public class Clustering {
         return dist;
     }
 
-    private void joinClusters() {
-
-    }
-
-    private void modelClusters() {
-
-    }
-
     /**
      * Dunn's Validity Index (DI) = dist_min / diam_max
      * dist_min = min inter-cluster distance (minimum distance between two clusters;
@@ -506,7 +499,7 @@ public class Clustering {
         LOGGER.info(String.format("DI = %.2f", DI));
     }
 
-    private void clustersModeling() {
+    private void modelClusters() {
         for (Cluster c: clusters) {
             if (c.getTrajectories().size() == 1) {
                 c.setClusterModel(c.getTrajectories().get(0));

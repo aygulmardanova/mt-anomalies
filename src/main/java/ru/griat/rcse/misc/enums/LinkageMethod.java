@@ -1,4 +1,4 @@
-package ru.griat.rcse.misc;
+package ru.griat.rcse.misc.enums;
 
 public enum LinkageMethod {
     SINGLE, AVERAGE, MAXIMUM;
