@@ -122,7 +122,7 @@ public class DisplayImage {
         );
         this.i = 0;
         trajectories.forEach(t -> {
-            t.getKeyPoints().forEach(kp -> {
+            getTrajectoryPoints(t).forEach(kp -> {
                 drawExtraBoldTrajectoryPoint(img, kp);
             });
             increaseI();

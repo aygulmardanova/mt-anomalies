@@ -3,6 +3,7 @@ package ru.griat.rcse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.griat.rcse.approximation.polynomial_regression.RegressionPerformer;
+import ru.griat.rcse.approximation.rdp.RDPPerformer;
 import ru.griat.rcse.clustering.Clustering;
 import ru.griat.rcse.csv.CSVProcessing;
 import ru.griat.rcse.entity.Cluster;
@@ -20,15 +21,17 @@ import java.util.stream.IntStream;
 import static java.util.stream.Collectors.toList;
 import static ru.griat.rcse.misc.Utils.*;
 
-public class JavaMain {
+public class Main {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(JavaMain.class.getName());
+    private final static Logger LOGGER = LoggerFactory.getLogger(Main.class.getName());
 
     private static Clustering clustering;
     private static RegressionPerformer regression;
+    private static RDPPerformer rdp;
 
     public static void main(String[] args) throws IOException, TrajectoriesParserException {
         regression = new RegressionPerformer();
+        rdp = new RDPPerformer();
 
         for (String input : INPUT_FILE_NAMES_FIRST) {
             List<Trajectory> trajectories = parseTrajectories(getFileName(input));
@@ -41,7 +44,8 @@ public class JavaMain {
             trajectories = trajectories.stream().filter(tr -> tr.length() > MIN_LENGTH && tr.totalDist() >= MIN_TOTAL_DIST).collect(toList());
 //            displayTrajectories(getImgFileName(input), trajectories);
 
-            regression.performRegression(trajectories, input);
+//            regression.performRegression(trajectories.subList(0, 10), input);
+            rdp.performRDP(trajectories.subList(0, 10), input);
 //            regression.performRegression(trajectories2, input);
 //            displayTrajectories(getImgFileName(input), trajectories, List.of(0, 2, 6, 8, 13, 70, 176, 180));
 
@@ -56,12 +60,12 @@ public class JavaMain {
             new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
             clustering.setTrajLCSSDistances(trajLCSSDistances);
 
-            List<Cluster> clusters = clustering.cluster(trajectories);
+//            List<Cluster> clusters = clustering.cluster(trajectories);
 //            for (int i = 0; i < clusters.size(); i++) {
 //                displayClusters(getImgFileName(input), clusters.subList(i, i + 1), false);
 //            }
 //            displayClusters(getImgFileName(input), clusters.stream().filter(cl -> !cl.getNormal()).collect(toList()), false);
-            displayClusters(getImgFileName(input), clusters, false);
+//            displayClusters(getImgFileName(input), clusters, false);
 
 //            List<Integer> trIds = List.of(100);
 //            List<Trajectory> inputTrajectories = trajectories.stream().filter(tr -> trIds.contains(tr.getId())).collect(toList());

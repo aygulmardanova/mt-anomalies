@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,7 +45,7 @@ public class Utils {
     public static final int MAX_KP_COUNT = 9;
     public static final int TIME_STEP = 5;
 
-    public static final ApproximationMethod APPROXIMATION_METHOD = ApproximationMethod.REGRESSION;
+    public static final ApproximationMethod APPROXIMATION_METHOD = ApproximationMethod.RDP;
     public static final boolean IS_ADAPTIVE = false;
     public static final double STATIC_COEFF = 0.15;
     public static final double ADAPT_COEFF = 20.0;
@@ -104,8 +105,33 @@ public class Utils {
                 getImgFileName(fileName + "-" + subName), "regression-results", trajectories, false);
     }
 
+    public static void displayRdpTrajectories(String fileName, String subName, List<Trajectory> trajectories) throws IOException {
+        new DisplayImage().displayAndSave(getImgFileName(fileName),
+                getImgFileName(fileName + "-" + subName), "rdp-results", trajectories, false);
+    }
+
     public static void displayTrajectories(String fileName, List<Trajectory> trajectories, List<Integer> indexes) throws IOException {
         new DisplayImage().displayAndSave(fileName, null, null, indexes.stream().map(trajectories::get).collect(toList()), false);
     }
 
+    public static List<Trajectory> copyTrajectories(List<Trajectory> trajectories) {
+        List<Trajectory> copies = new ArrayList<>();
+        for (Trajectory traj : trajectories) {
+            List<TrajectoryPoint> tpCopy = traj.getTrajectoryPoints().stream().map(tp ->
+                    new TrajectoryPoint(
+                            (int) Math.round(traj.getRegressionX().predict(tp.getTime())),
+                            (int) Math.round(traj.getRegressionY().predict(tp.getTime())),
+                            tp.getTime()
+                    )).collect(toList());
+            Trajectory trCopy = new Trajectory(traj.getId() * 100, tpCopy);
+            trCopy.setRegressionX(traj.getRegressionX());
+            trCopy.setRegressionY(traj.getRegressionY());
+            trCopy.setKeyPoints(traj.getKeyPoints());
+            trCopy.setRdpPoints(traj.getRdpPoints());
+            copies.add(traj);
+            copies.add(trCopy);
+        }
+        return copies;
+
+    }
 }

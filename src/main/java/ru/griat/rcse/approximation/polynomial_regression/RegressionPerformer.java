@@ -20,6 +20,7 @@ import static ru.griat.rcse.misc.Utils.IMAGE_MIN_X;
 import static ru.griat.rcse.misc.Utils.IMAGE_MIN_Y;
 import static ru.griat.rcse.misc.Utils.MAX_KP_COUNT;
 import static ru.griat.rcse.misc.Utils.TIME_STEP;
+import static ru.griat.rcse.misc.Utils.copyTrajectories;
 import static ru.griat.rcse.misc.Utils.displayRegressionTrajectories;
 
 public class RegressionPerformer {
@@ -69,21 +70,7 @@ public class RegressionPerformer {
         }
 //        printStatistics(trajectories, input, minDegree, minR2forX, minR2forY, minR2forXid, minR2forYid);
 
-        List<Trajectory> copies = new ArrayList<>();
-        for (Trajectory traj : trajectories) {
-            List<TrajectoryPoint> tpCopy = traj.getTrajectoryPoints().stream().map(tp ->
-                    new TrajectoryPoint(
-                            (int) Math.round(traj.getRegressionX().predict(tp.getTime())),
-                            (int) Math.round(traj.getRegressionY().predict(tp.getTime())),
-                            tp.getTime()
-                    )).collect(toList());
-            Trajectory trCopy = new Trajectory(traj.getId() * 100, tpCopy);
-            trCopy.setRegressionX(traj.getRegressionX());
-            trCopy.setRegressionY(traj.getRegressionY());
-            trCopy.setKeyPoints(traj.getKeyPoints());
-            copies.add(traj);
-//            copies.add(trCopy);
-        }
+        List<Trajectory> copies = copyTrajectories(trajectories);
         displayRegressionTrajectories(input, null, copies);
 //        displayRegressionTrajectories(input, null, trajectories.stream().filter(tr -> List.of(300, 575, 2).contains(tr.getId())).collect(toList()));
 //        displayRegressionTrajectories(input, null, copies.stream().filter(tr -> tr.getRegressionX().degree() == 4 && tr.getRegressionY().degree() == 4).collect(toList()));
@@ -91,7 +78,7 @@ public class RegressionPerformer {
         System.out.println("min: " + trajectories.stream().mapToInt(tr -> tr.getKeyPoints().size()).min());
         System.out.println("max: " + trajectories.stream().mapToInt(tr -> tr.getKeyPoints().size()).max());
         System.out.println("avg: " + trajectories.stream().mapToInt(tr -> tr.getKeyPoints().size()).average());
-        displayRegressionTrajectories(input, null, copies.stream().filter(c -> c.getKeyPoints().size() == 3).collect(toList()));
+//        displayRegressionTrajectories(input, null, copies.stream().filter(c -> c.getKeyPoints().size() == 3).collect(toList()));
     }
 
     private void calculateKeyPoints(Trajectory currentTr) {
@@ -109,6 +96,7 @@ public class RegressionPerformer {
         Polynomial diffY2 = diffY1.derivative();
 
 //        LaguerreSolver, BisectionSolver,
+//        TODO: try to add steps and obtain more equation solutions (use START_VALUE for the solver)
         BaseAbstractUnivariateSolver bisectionSolver = new BisectionSolver();
         BaseAbstractUnivariateSolver laguerreSolver = new LaguerreSolver();
         for (Polynomial diff : List.of(diffX1, diffX2, diffY1, diffY2)) {
