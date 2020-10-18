@@ -1,5 +1,5 @@
 package ru.griat.rcse.misc.enums;
 
 public enum ApproximationMethod {
-    NONE, REGRESSION, RDP;
+    NONE, REGRESSION, RDP, RDP_N;
 }

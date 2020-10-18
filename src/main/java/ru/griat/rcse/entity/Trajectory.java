@@ -127,8 +127,17 @@ public class Trajectory implements Cloneable {
         this.rdpPoints = rdpPoints;
     }
 
-    public void addRDPPoint(TrajectoryPoint rdpPoint) {
-        this.rdpPoints.add(rdpPoint);
+    public void addRDPPoint(TrajectoryPoint rdpPoint, Integer bonusTT) {
+        if (rdpPoint.getTime() > this.get(length() - 1).getTime())
+            return;
+        if (this.length() > MAX_KP_COUNT && this.keyPoints.stream().anyMatch(thisKP -> Math.abs(thisKP.getTime() - rdpPoint.getTime()) < 1 * TIME_STEP)) {
+            if (bonusTT == null)
+                return;
+            this.addRDPPoint(this.trajectoryPoints.stream().filter(tp -> tp.getTime() == bonusTT).findFirst().get(), null);
+            return;
+        }
+        if (!rdpPoints.contains(rdpPoint) && checkTPValidity(rdpPoint))
+            this.rdpPoints.add(rdpPoint.clone());
     }
 
     public Integer length() {

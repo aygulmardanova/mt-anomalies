@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import static java.lang.Math.*;
 import static ru.griat.rcse.misc.Utils.ADAPT_COEFF;
 import static ru.griat.rcse.misc.Utils.IS_ADAPTIVE;
+import static ru.griat.rcse.misc.Utils.LINKAGE_METHOD;
 import static ru.griat.rcse.misc.Utils.OUTPUT_CLUSTERS_COUNT;
 import static ru.griat.rcse.misc.Utils.STATIC_COEFF;
 import static ru.griat.rcse.misc.Utils.getImgFileName;
@@ -234,7 +235,7 @@ public class Clustering {
 //            join i1 and i2 clusters, add i1 traj-es to cluster i2
             clusters.get(id1).appendTrajectories(clusters.get(id2).getTrajectories());
 //            recalculate D for i1 and i2 lines -> set i2 line all to NULLs
-            recalcClustersDistMatrix(id1, id2, LinkageMethod.AVERAGE);
+            recalcClustersDistMatrix(id1, id2);
 
 //            remove i2 from 'clusters'
             clusters.remove(id2);
@@ -275,7 +276,6 @@ public class Clustering {
         return dist;
     }
 
-
     /**
      * Calculates LCSS for two input trajectories
      * Bigger the LCSS - the better
@@ -301,8 +301,8 @@ public class Clustering {
         if (IS_ADAPTIVE) {
             TrajectoryPoint tp1 = trajectoryPoints1.get(m - 1);
             TrajectoryPoint tp2 = trajectoryPoints2.get(n - 1);
-            epsilonX = getEpsilonX(tp1, tp2, LinkageMethod.AVERAGE);
-            epsilonY = getEpsilonY(tp1, tp2, LinkageMethod.AVERAGE);
+            epsilonX = getEpsilonX(tp1, tp2);
+            epsilonY = getEpsilonY(tp1, tp2);
         }
 
 //      check last trajectory point (of each trajectory-part recursively)
@@ -355,8 +355,8 @@ public class Clustering {
         return STATIC_COEFF * (maxX - minX);
     }
 
-    private Double getEpsilonX(TrajectoryPoint tp1, TrajectoryPoint tp2, LinkageMethod method) {
-        switch (method) {
+    private Double getEpsilonX(TrajectoryPoint tp1, TrajectoryPoint tp2) {
+        switch (LINKAGE_METHOD) {
             case SINGLE:
                 return Math.min(tp1.getEpsilonX(), tp2.getEpsilonX());
             case AVERAGE:
@@ -378,8 +378,8 @@ public class Clustering {
         return STATIC_COEFF * (maxY - minY);
     }
 
-    private Double getEpsilonY(TrajectoryPoint tp1, TrajectoryPoint tp2, LinkageMethod method) {
-        switch (method) {
+    private Double getEpsilonY(TrajectoryPoint tp1, TrajectoryPoint tp2) {
+        switch (LINKAGE_METHOD) {
             case SINGLE:
                 return Math.min(tp1.getEpsilonY(), tp2.getEpsilonY());
             case AVERAGE:
@@ -398,11 +398,11 @@ public class Clustering {
      * @param clusterId1 index of left joined cluster in clusters list (remained cluster)
      * @param clusterId2 index of right joined cluster in clusters list (removed cluster)
      */
-    private void recalcClustersDistMatrix(int clusterId1, int clusterId2, LinkageMethod method) {
+    private void recalcClustersDistMatrix(int clusterId1, int clusterId2) {
         for (int i = 0; i < clusters.size(); i++) {
             for (int j = i + 1; j < clusters.size(); j++) {
                 clustLCSSDistances[clusters.get(i).getId()][clusters.get(j).getId()] =
-                        calcClustersDist(clusters.get(i), clusters.get(j), method);
+                        calcClustersDist(clusters.get(i), clusters.get(j));
             }
         }
 //        for (int i = 0; i < clusterId1; i++) {
@@ -423,9 +423,9 @@ public class Clustering {
      * @param cluster2 second cluster
      * @return distance between clusters
      */
-    private Double calcClustersDist(Cluster cluster1, Cluster cluster2, LinkageMethod method) {
+    private Double calcClustersDist(Cluster cluster1, Cluster cluster2) {
         double dist = 0.0;
-        switch (method) {
+        switch (LINKAGE_METHOD) {
             case SINGLE: {
                 dist = Double.MAX_VALUE;
                 for (Trajectory trajectory1 : cluster1.getTrajectories()) {
@@ -491,7 +491,6 @@ public class Clustering {
                         maxDist = trajLCSSDistances[cluster.getTrajectories().get(i).getId()][cluster.getTrajectories().get(j).getId()];
                 }
             }
-
             return maxDist;
         }).max().getAsDouble();
 

@@ -7,14 +7,14 @@ import java.util.List;
 
 public class Line {
 
-    private TrajectoryPoint start;
-    private TrajectoryPoint end;
+    private final TrajectoryPoint start;
+    private final TrajectoryPoint end;
 
-    private double dx;
-    private double dy;
-    private double sxey;
-    private double exsy;
-    private double length;
+    private final double dx;
+    private final double dy;
+    private final double sxey;
+    private final double exsy;
+    private final double length;
 
     public Line(TrajectoryPoint start, TrajectoryPoint end) {
         this.start = start;
@@ -26,12 +26,16 @@ public class Line {
         length = Math.sqrt(dx * dx + dy * dy);
     }
 
-    @SuppressWarnings("unchecked")
     public List<TrajectoryPoint> asList() {
         return Arrays.asList(start, end);
     }
 
-    double distance(TrajectoryPoint tp) {
+    public double distance(TrajectoryPoint tp) {
+        if (length == 0.0) {
+            double curdx = start.getX() - tp.getX();
+            double curdy = start.getY() - tp.getY();
+            return Math.sqrt(curdx * curdx + curdy * curdy);
+        }
         return Math.abs(dy * tp.getX() - dx * tp.getY() + sxey - exsy) / length;
     }
 

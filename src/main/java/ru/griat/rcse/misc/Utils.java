@@ -4,6 +4,7 @@ import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
 import ru.griat.rcse.misc.enums.ApproximationMethod;
+import ru.griat.rcse.misc.enums.LinkageMethod;
 import ru.griat.rcse.visualisation.DisplayImage;
 
 import java.io.File;
@@ -25,7 +26,7 @@ public class Utils {
     public static final Path OUTPUT_IMG_DIR = Paths.get(RESOURCES_PATH.toString(), "output");
     public static final Path CSV_DIR = Paths.get(RESOURCES_PATH.toString(), "csv");
 
-    public static final String EXPERIMENT_ID = "exp10";
+    public static final String EXPERIMENT_ID = "exp7";
     public static final String[] INPUT_FILE_NAMES = {"1", "2", "3", "4"};
     public static final String[] INPUT_FILE_NAMES_FIRST = {"1"};
     public static final String INPUT_FILE_EXTENSION = "txt";
@@ -45,11 +46,14 @@ public class Utils {
     public static final int MAX_KP_COUNT = 9;
     public static final int TIME_STEP = 5;
 
-    public static final ApproximationMethod APPROXIMATION_METHOD = ApproximationMethod.RDP;
+    public static final LinkageMethod LINKAGE_METHOD = LinkageMethod.AVERAGE;
+    public static final ApproximationMethod APPROXIMATION_METHOD = ApproximationMethod.REGRESSION;
     public static final boolean IS_ADAPTIVE = false;
     public static final double STATIC_COEFF = 0.15;
     public static final double ADAPT_COEFF = 20.0;
     public static final int OUTPUT_CLUSTERS_COUNT = 8;
+    public static final double RDP_EPSILON = 10.5;
+    public static final int RDP_COUNT = MAX_KP_COUNT;
 
     public static String getImgFileName(String name) {
         return name + "." + INPUT_IMG_EXTENSION;
@@ -82,6 +86,7 @@ public class Utils {
             case REGRESSION:
                 return trajectory.getKeyPoints();
             case RDP:
+            case RDP_N:
                 return trajectory.getRdpPoints();
         }
         return Collections.emptyList();
@@ -114,6 +119,10 @@ public class Utils {
         new DisplayImage().displayAndSave(fileName, null, null, indexes.stream().map(trajectories::get).collect(toList()), false);
     }
 
+    public static List<Trajectory> filterTrajectories(List<Trajectory> trajectories) {
+        return trajectories.stream().filter(tr -> tr.length() > MIN_LENGTH && tr.totalDist() >= MIN_TOTAL_DIST).collect(toList());
+    }
+
     public static List<Trajectory> copyTrajectories(List<Trajectory> trajectories) {
         List<Trajectory> copies = new ArrayList<>();
         for (Trajectory traj : trajectories) {
@@ -132,6 +141,6 @@ public class Utils {
             copies.add(trCopy);
         }
         return copies;
-
     }
+
 }

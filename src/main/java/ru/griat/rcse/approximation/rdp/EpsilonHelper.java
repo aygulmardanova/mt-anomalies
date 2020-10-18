@@ -2,6 +2,7 @@ package ru.griat.rcse.approximation.rdp;
 
 import ru.griat.rcse.entity.TrajectoryPoint;
 
+import java.util.Arrays;
 import java.util.List;
 
 /*
@@ -30,29 +31,14 @@ public class EpsilonHelper {
     }
 
     public static double sum(double[] values) {
-        double sum = 0.0;
-        for (double value : values) {
-            sum += value;
-        }
-        return sum;
+        return Arrays.stream(values).sum();
     }
 
-
     public static double avg(double[] values) {
-        if (values.length > 0) {
-            return sum(values) / values.length;
-        } else {
-            return 0.0;
-        }
+        return Arrays.stream(values).average().orElse(0.0);
     }
 
     public static double max(double[] values) {
-        double max = 0.0;
-        for (double value : values) {
-            if (value > max) {
-                max = value;
-            }
-        }
-        return max;
+        return Arrays.stream(values).max().orElse(0.0);
     }
 }

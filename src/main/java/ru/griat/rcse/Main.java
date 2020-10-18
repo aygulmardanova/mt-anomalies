@@ -10,6 +10,7 @@ import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
 import ru.griat.rcse.exception.TrajectoriesParserException;
+import ru.griat.rcse.misc.Utils;
 import ru.griat.rcse.parsing.TrajectoriesParser;
 
 import java.io.IOException;
@@ -38,16 +39,21 @@ public class Main {
 //            List<Trajectory> trajectories2 = parseTrajectories(getFileName("2"));
             List<Trajectory> initialTrajectories = trajectories;
             Double[][] trajLCSSDistances;
-//            displayTrajectories(getImgFileName(input), trajectories);
-//            displayTrajectories(getImgFileName(input), trajectories.stream().filter(tr -> tr.length() <= MIN_LENGTH || tr.totalDist() < MIN_TOTAL_DIST).collect(toList()));
 
-            trajectories = trajectories.stream().filter(tr -> tr.length() > MIN_LENGTH && tr.totalDist() >= MIN_TOTAL_DIST).collect(toList());
+            trajectories = filterTrajectories(trajectories);
 //            displayTrajectories(getImgFileName(input), trajectories);
 
-//            regression.performRegression(trajectories.subList(0, 10), input);
-            rdp.performRDP(trajectories.subList(0, 10), input);
-//            regression.performRegression(trajectories2, input);
-//            displayTrajectories(getImgFileName(input), trajectories, List.of(0, 2, 6, 8, 13, 70, 176, 180));
+            switch (APPROXIMATION_METHOD) {
+                case NONE:
+                    break;
+                case REGRESSION:
+                    regression.performRegression(trajectories, input);
+                    break;
+                case RDP:
+                case RDP_N:
+                    rdp.performRDP(trajectories, input);
+                    break;
+            }
 
             clustering = new Clustering(initialTrajectories);
             setInputBorders(initialTrajectories);

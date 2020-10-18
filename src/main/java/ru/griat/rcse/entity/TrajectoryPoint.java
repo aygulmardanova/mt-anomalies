@@ -114,6 +114,14 @@ public class TrajectoryPoint implements Cloneable {
                 Objects.equals(time, that.time);
     }
 
+    public boolean equalsSpatially(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TrajectoryPoint that = (TrajectoryPoint) o;
+        return Objects.equals(x, that.x) &&
+                Objects.equals(y, that.y);
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(x, y, time);

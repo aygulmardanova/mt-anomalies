@@ -1,32 +1,36 @@
 package ru.griat.rcse.approximation.rdp;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.griat.rcse.approximation.rdp.RDPReducer;
 import ru.griat.rcse.entity.Trajectory;
+import ru.griat.rcse.misc.enums.ApproximationMethod;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static ru.griat.rcse.approximation.ApproximationUtils.calcAdditionalRdpPoints;
+import static ru.griat.rcse.approximation.ApproximationUtils.positionalErrors;
+import static ru.griat.rcse.approximation.ApproximationUtils.printTrajectoriesLengthsStatistics;
+import static ru.griat.rcse.misc.Utils.APPROXIMATION_METHOD;
+import static ru.griat.rcse.misc.Utils.RDP_COUNT;
+import static ru.griat.rcse.misc.Utils.RDP_EPSILON;
 import static ru.griat.rcse.misc.Utils.displayRdpTrajectories;
 
 public class RDPPerformer {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(RDPPerformer.class.getName());
-
     public void performRDP(List<Trajectory> trajectories, String input) throws IOException {
-        double epsilon = 0.5;
-        for (int tId = 0; tId < trajectories.size(); tId++) {
-            Trajectory currentTr = trajectories.get(tId);
-
-            currentTr.setRdpPoints(RDPReducer.reduce(currentTr.getTrajectoryPoints(), epsilon));
-            System.out.println("orig: " + currentTr.length() + ", rdp: " + currentTr.getRdpPoints().size());
+        for (Trajectory currentTr : trajectories) {
+            currentTr.setRdpPoints(APPROXIMATION_METHOD == ApproximationMethod.RDP
+                    ? RDPReducer.reduce(currentTr.getTrajectoryPoints(), RDP_EPSILON)
+                    : RDPReducer.reduceToN(currentTr.getTrajectoryPoints(), RDP_COUNT));
+            calcAdditionalRdpPoints(currentTr);
         }
 
-        displayRdpTrajectories(input, null, trajectories);
-        System.out.println("min: " + trajectories.stream().mapToInt(tr -> tr.getRdpPoints().size()).min());
-        System.out.println("max: " + trajectories.stream().mapToInt(tr -> tr.getRdpPoints().size()).max());
-        System.out.println("avg: " + trajectories.stream().mapToInt(tr -> tr.getRdpPoints().size()).average());
+        int start = 100;
+        int endll = 115;
+        displayRdpTrajectories(input, null, trajectories.subList(start,endll));
+//        displayRdpTrajectories(input, null, trajectories.stream().filter(tr -> tr.getRdpPoints().size() <= 2).collect(Collectors.toList()));
 
+        positionalErrors(trajectories);
+        printTrajectoriesLengthsStatistics(trajectories);
     }
 }
