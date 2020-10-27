@@ -1,4 +1,4 @@
-package ru.griat.rcse.approximation;
+package ru.griat.rcse.misc;
 
 import org.apache.commons.math3.analysis.solvers.BaseAbstractUnivariateSolver;
 import org.apache.commons.math3.analysis.solvers.BisectionSolver;

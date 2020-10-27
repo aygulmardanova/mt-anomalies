@@ -1,9 +1,11 @@
 package ru.griat.rcse.misc;
 
+import ru.griat.rcse.approximation.polynomial_regression.RegressionPerformer;
 import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
 import ru.griat.rcse.misc.enums.ApproximationMethod;
+import ru.griat.rcse.misc.enums.ClusteringMethod;
 import ru.griat.rcse.misc.enums.LinkageMethod;
 import ru.griat.rcse.visualisation.DisplayImage;
 
@@ -48,6 +50,7 @@ public class Utils {
     public static final int MAX_KP_COUNT = 9;
     public static final int TIME_STEP = 5;
 
+    public static final ClusteringMethod CLUSTERING_METHOD = ClusteringMethod.HIERARCHICAL;
     public static final LinkageMethod LINKAGE_METHOD = LinkageMethod.AVERAGE;
     public static final ApproximationMethod APPROXIMATION_METHOD = ApproximationMethod.REGRESSION;
     public static final boolean IS_ADAPTIVE = true;
@@ -168,6 +171,23 @@ public class Utils {
                 .filter(ind ->
                         trajectories.get(ind).length() < maxLength)
                 .collect(toList());
+    }
+
+    public static List<Trajectory> generateTestTrajectories(TrajectoryPoint cp) throws IOException {
+        int l1 = 30;
+        List<TrajectoryPoint> tpList1 = new ArrayList<>();
+        int coeffX = 30;
+        int coeffY = 10;
+        for (int i = 0; i < l1; i++) {
+//            tpList1.add(new TrajectoryPoint(cp.getX() + i * 10, cp.getY() + i * 10, i * TIME_STEP));
+            tpList1.add(new TrajectoryPoint(cp.getX() + i * coeffX, cp.getY() - i * coeffY, i * TIME_STEP));
+        }
+        Trajectory t1 = new Trajectory(0, tpList1);
+
+        List<Trajectory> tList = new ArrayList<>(List.of(t1));
+        new RegressionPerformer().performRegression(tList, null);
+//        t1.setTrajectoryPoints(t1.getKeyPoints());
+        return tList;
     }
 
 }

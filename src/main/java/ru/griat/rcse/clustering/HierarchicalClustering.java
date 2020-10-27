@@ -15,7 +15,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.*;
-import static ru.griat.rcse.misc.Utils.ADAPT_COEFF;
+import static ru.griat.rcse.misc.ClusteringUtils.calcEuclDistancesToCP;
+import static ru.griat.rcse.misc.ClusteringUtils.containsAbsolutelyDifferentTraj;
+import static ru.griat.rcse.misc.ClusteringUtils.head;
 import static ru.griat.rcse.misc.Utils.IS_ADAPTIVE;
 import static ru.griat.rcse.misc.Utils.LINKAGE_METHOD;
 import static ru.griat.rcse.misc.Utils.OUTPUT_CLUSTERS_COUNT;
@@ -23,9 +25,9 @@ import static ru.griat.rcse.misc.Utils.STATIC_COEFF;
 import static ru.griat.rcse.misc.Utils.getImgFileName;
 import static ru.griat.rcse.misc.Utils.getTrajectoryPoints;
 
-public class Clustering {
+public class HierarchicalClustering {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Clustering.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(HierarchicalClustering.class.getName());
 
     private List<Cluster> clusters;
 
@@ -41,7 +43,7 @@ public class Clustering {
         return cameraPoint;
     }
 
-    public Clustering(List<Trajectory> trajectories) {
+    public HierarchicalClustering(List<Trajectory> trajectories) {
         clusters = new ArrayList<>();
         trajLCSSDistances = new Double[trajectories.size()][trajectories.size()];
         clustLCSSDistances = new Double[trajectories.size()][trajectories.size()];
@@ -64,27 +66,12 @@ public class Clustering {
         this.minY = minY;
         this.maxY = maxY;
         this.cameraPoint = new TrajectoryPoint((int) Math.round(0.25 * maxX), (int) Math.round(0.95 * maxY));
-        calcEuclDistancesToCP(trajectories);
+        calcEuclDistancesToCP(trajectories, cameraPoint, maxX, minX, maxY, minY);
 //        try {
 //            new DisplayImage().displayAndSave(getImgFileName("1"), cameraPoint, false);
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-    }
-
-    /**
-     * For each trajectory in @trajectories calc the adaptive epsilonX and epsilonY
-     * for each trajectory point (key points for regression, and rdp points for RDP, RDP_N algorithms)
-     *
-     * @param trajectories list of trajectories to calculate Euclidean distances between each pair
-     */
-    private void calcEuclDistancesToCP(List<Trajectory> trajectories) {
-        trajectories.forEach(tr ->
-                getTrajectoryPoints(tr).forEach(kp -> {
-                    double cpDist = kp.distanceTo(cameraPoint);
-                    kp.setEpsilons(cpDist, maxX, minX, maxY, minY);
-                })
-        );
     }
 
     /**
@@ -140,7 +127,7 @@ public class Clustering {
         inputTrajectories.forEach(it -> {
             final double[] minLcss = {1.0};
             final Cluster[] closestCluster = {null};
-            calcEuclDistancesToCP(inputTrajectories);
+            calcEuclDistancesToCP(inputTrajectories, cameraPoint, maxX, minX, maxY, minY);
 
             System.out.println(String.format("------tr %s-----", it.getId()));
             clusters.forEach(cl -> {
@@ -201,10 +188,10 @@ public class Clustering {
                     if (i1 != i2
                             && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] != null
                             && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] <= minClustDist
-//                            && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2))
+//                            && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2), trajLCSSDistances)
                     ) {
 //                        FIXME: for normal clustering uncomment lines
-//                        if (clusters.size() > 25 && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2))
+//                        if (clusters.size() > 25 && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2), trajLCSSDistances)
 //                                || clusters.size() <= 50 && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] <= 0.91
 //                                || clusters.size() <= 25) {
                         minClustDist = clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()];
@@ -218,25 +205,15 @@ public class Clustering {
                 break;
             }
 //            join i1 and i2 clusters, add i1 traj-es to cluster i2
-            clusters.get(id1).appendTrajectories(clusters.get(id2).getTrajectories());
 //            recalculate D for i1 and i2 lines -> set i2 line all to NULLs
-            recalcClustersDistMatrix(id1, id2);
-
 //            remove i2 from 'clusters'
+
+            clusters.get(id1).appendTrajectories(clusters.get(id2).getTrajectories());
+            recalcClustersDistMatrix(id1, id2);
             clusters.remove(id2);
 
             numOfClusters--;
         }
-    }
-
-    private boolean containsAbsolutelyDifferentTraj(Cluster c1, Cluster c2) {
-        for (Trajectory t1 : c1.getTrajectories()) {
-            for (Trajectory t2 : c2.getTrajectories()) {
-                if (trajLCSSDistances[t1.getId()][t2.getId()] != null && trajLCSSDistances[t1.getId()][t2.getId()] == 1.0)
-                    return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -304,18 +281,6 @@ public class Clustering {
                     calcLCSS(t1, head(t2), delta, epsilonX, epsilonY)
             );
         }
-    }
-
-    /**
-     * Calculates shortened trajectory by excluding last trajectory point
-     *
-     * @param t trajectory
-     * @return trajectory without last trajectory point
-     */
-    private Trajectory head(Trajectory t) {
-        Trajectory tClone = t.clone();
-        getTrajectoryPoints(tClone).remove(getTrajectoryPoints(tClone).size() - 1);
-        return tClone;
     }
 
     /**

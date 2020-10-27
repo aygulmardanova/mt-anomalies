@@ -9,18 +9,16 @@ import java.io.IOException;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
-import static ru.griat.rcse.approximation.ApproximationUtils.addFirstAndLastPoints;
-import static ru.griat.rcse.approximation.ApproximationUtils.calcAdditionalKeyPoints;
-import static ru.griat.rcse.approximation.ApproximationUtils.calculateDiffEquationSolutions;
-import static ru.griat.rcse.approximation.ApproximationUtils.positionalErrors;
-import static ru.griat.rcse.approximation.ApproximationUtils.printTrajectoriesLengthsStatistics;
+import static ru.griat.rcse.misc.ApproximationUtils.addFirstAndLastPoints;
+import static ru.griat.rcse.misc.ApproximationUtils.calcAdditionalKeyPoints;
+import static ru.griat.rcse.misc.ApproximationUtils.calculateDiffEquationSolutions;
+import static ru.griat.rcse.misc.ApproximationUtils.positionalErrors;
+import static ru.griat.rcse.misc.ApproximationUtils.printTrajectoriesLengthsStatistics;
 import static ru.griat.rcse.misc.Utils.IMAGE_MAX_X;
 import static ru.griat.rcse.misc.Utils.IMAGE_MAX_Y;
 import static ru.griat.rcse.misc.Utils.IMAGE_MIN_X;
 import static ru.griat.rcse.misc.Utils.IMAGE_MIN_Y;
 import static ru.griat.rcse.misc.Utils.MAX_KP_COUNT;
-import static ru.griat.rcse.misc.Utils.copyTrajectories;
-import static ru.griat.rcse.misc.Utils.displayRegressionTrajectories;
 import static ru.griat.rcse.misc.Utils.sortTrajectoryPoints;
 
 public class RegressionPerformer {

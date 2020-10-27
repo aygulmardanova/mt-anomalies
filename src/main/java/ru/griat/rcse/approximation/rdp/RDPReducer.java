@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
-import static ru.griat.rcse.approximation.ApproximationUtils.calcDist;
+import static ru.griat.rcse.misc.ApproximationUtils.calcDist;
 
 /*
  * from https://github.com/LukaszWiktor/series-reducer

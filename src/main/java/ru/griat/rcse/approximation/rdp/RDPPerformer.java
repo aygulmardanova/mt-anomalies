@@ -5,15 +5,13 @@ import ru.griat.rcse.misc.enums.ApproximationMethod;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static ru.griat.rcse.approximation.ApproximationUtils.calcAdditionalRdpPoints;
-import static ru.griat.rcse.approximation.ApproximationUtils.positionalErrors;
-import static ru.griat.rcse.approximation.ApproximationUtils.printTrajectoriesLengthsStatistics;
+import static ru.griat.rcse.misc.ApproximationUtils.calcAdditionalRdpPoints;
+import static ru.griat.rcse.misc.ApproximationUtils.positionalErrors;
+import static ru.griat.rcse.misc.ApproximationUtils.printTrajectoriesLengthsStatistics;
 import static ru.griat.rcse.misc.Utils.APPROXIMATION_METHOD;
 import static ru.griat.rcse.misc.Utils.RDP_COUNT;
 import static ru.griat.rcse.misc.Utils.RDP_EPSILON;
-import static ru.griat.rcse.misc.Utils.displayRdpTrajectories;
 import static ru.griat.rcse.misc.Utils.sortTrajectoryPoints;
 
 public class RDPPerformer {
