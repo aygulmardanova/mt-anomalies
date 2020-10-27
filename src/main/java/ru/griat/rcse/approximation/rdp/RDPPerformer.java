@@ -14,6 +14,7 @@ import static ru.griat.rcse.misc.Utils.APPROXIMATION_METHOD;
 import static ru.griat.rcse.misc.Utils.RDP_COUNT;
 import static ru.griat.rcse.misc.Utils.RDP_EPSILON;
 import static ru.griat.rcse.misc.Utils.displayRdpTrajectories;
+import static ru.griat.rcse.misc.Utils.sortTrajectoryPoints;
 
 public class RDPPerformer {
 
@@ -23,11 +24,10 @@ public class RDPPerformer {
                     ? RDPReducer.reduce(currentTr.getTrajectoryPoints(), RDP_EPSILON)
                     : RDPReducer.reduceToN(currentTr.getTrajectoryPoints(), RDP_COUNT));
             calcAdditionalRdpPoints(currentTr);
+            sortTrajectoryPoints(currentTr);
         }
 
-        int start = 100;
-        int endll = 115;
-        displayRdpTrajectories(input, null, trajectories.subList(start,endll));
+//        displayRdpTrajectories(input, null, trajectories);
 //        displayRdpTrajectories(input, null, trajectories.stream().filter(tr -> tr.getRdpPoints().size() <= 2).collect(Collectors.toList()));
 
         positionalErrors(trajectories);

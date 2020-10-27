@@ -7,11 +7,14 @@ import org.apache.commons.math3.exception.NoBracketingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.griat.rcse.approximation.polynomial_regression.Polynomial;
+import ru.griat.rcse.approximation.polynomial_regression.RegressionPerformer;
 import ru.griat.rcse.approximation.rdp.Line;
+import ru.griat.rcse.approximation.rdp.RDPPerformer;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
 import ru.griat.rcse.misc.enums.ApproximationMethod;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.OptionalInt;
 
@@ -22,6 +25,20 @@ import static ru.griat.rcse.misc.Utils.TIME_STEP;
 public class ApproximationUtils {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ApproximationUtils.class.getName());
+
+    public static void performApproximation(List<Trajectory> trajectories, String input) throws IOException {
+        switch (APPROXIMATION_METHOD) {
+            case NONE:
+                break;
+            case REGRESSION:
+                new RegressionPerformer().performRegression(trajectories, input);
+                break;
+            case RDP:
+            case RDP_N:
+                new RDPPerformer().performRDP(trajectories, input);
+                break;
+        }
+    }
 
     public static void calculateDiffEquationSolutions(Trajectory currentTr) {
 

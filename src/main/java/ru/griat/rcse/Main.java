@@ -3,14 +3,12 @@ package ru.griat.rcse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.griat.rcse.approximation.polynomial_regression.RegressionPerformer;
-import ru.griat.rcse.approximation.rdp.RDPPerformer;
 import ru.griat.rcse.clustering.Clustering;
 import ru.griat.rcse.csv.CSVProcessing;
 import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
 import ru.griat.rcse.exception.TrajectoriesParserException;
-import ru.griat.rcse.misc.Utils;
 import ru.griat.rcse.parsing.TrajectoriesParser;
 
 import java.io.IOException;
@@ -20,6 +18,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
+import static ru.griat.rcse.approximation.ApproximationUtils.performApproximation;
 import static ru.griat.rcse.misc.Utils.*;
 
 public class Main {
@@ -27,12 +26,8 @@ public class Main {
     private final static Logger LOGGER = LoggerFactory.getLogger(Main.class.getName());
 
     private static Clustering clustering;
-    private static RegressionPerformer regression;
-    private static RDPPerformer rdp;
 
     public static void main(String[] args) throws IOException, TrajectoriesParserException {
-        regression = new RegressionPerformer();
-        rdp = new RDPPerformer();
 
         for (String input : INPUT_FILE_NAMES_FIRST) {
             List<Trajectory> trajectories = parseTrajectories(getFileName(input));
@@ -43,28 +38,19 @@ public class Main {
             trajectories = filterTrajectories(trajectories);
 //            displayTrajectories(getImgFileName(input), trajectories);
 
-            switch (APPROXIMATION_METHOD) {
-                case NONE:
-                    break;
-                case REGRESSION:
-                    regression.performRegression(trajectories, input);
-                    break;
-                case RDP:
-                case RDP_N:
-                    rdp.performRDP(trajectories, input);
-                    break;
-            }
+            performApproximation(trajectories, input);
+            displayTrajectories(getImgFileName(input), trajectories.stream().filter(tr -> tr.getRegressionX().degree() < 2 || tr.getRegressionY().degree() < 2).collect(toList()));
 
-            clustering = new Clustering(initialTrajectories);
-            setInputBorders(initialTrajectories);
+//            clustering = new Clustering(initialTrajectories);
+//            setInputBorders(initialTrajectories);
 
-//            calcDistances(trajectories, 0, 0, 0, 0);
+//            calcDistances(trajectories);
 //            trajLCSSDistances = clustering.getTrajLCSSDistances();
 //            new CSVProcessing().writeCSV(trajLCSSDistances, 0, initialTrajectories.size(), 0, initialTrajectories.size(), EXPERIMENT_ID, input);
 
-            trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
-            new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
-            clustering.setTrajLCSSDistances(trajLCSSDistances);
+//            trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
+//            new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
+//            clustering.setTrajLCSSDistances(trajLCSSDistances);
 
 //            List<Cluster> clusters = clustering.cluster(trajectories);
 //            for (int i = 0; i < clusters.size(); i++) {
@@ -96,7 +82,7 @@ public class Main {
         Trajectory t1 = new Trajectory(0, tpList1);
 
         List<Trajectory> tList = new ArrayList<>(List.of(t1));
-        regression.performRegression(tList, null);
+        new RegressionPerformer().performRegression(tList, null);
 //        t1.setTrajectoryPoints(t1.getKeyPoints());
         return tList;
     }
@@ -109,7 +95,7 @@ public class Main {
         return trajectories;
     }
 
-    private static void calcDistances(List<Trajectory> trajectories, int start1, int end1, int start2, int end2) {
+    private static void calcDistances(List<Trajectory> trajectories) {
         for (Trajectory t1 : trajectories) {
             for (Trajectory t2 : trajectories) {
                 if (t1.getId() != t2.getId() && t1.getId() < t2.getId()) {
@@ -123,12 +109,12 @@ public class Main {
         LOGGER.info("-----");
         double dist = clustering.calcLCSSDist(t1, t2);
 
-        if (dist != 1) {
+        if (!Double.valueOf(1.0).equals(dist)) {
             LOGGER.info("Calculating distance between trajectories: " +
                     "\n1) " + t1 + "; " +
                     "\n2) " + t2);
+            LOGGER.info("dist(" + t1.getId() + ", " + t2.getId() + ") = " + dist);
         }
-        LOGGER.info("dist(" + t1.getId() + ", " + t2.getId() + ") = " + dist);
 
         return dist;
     }
@@ -162,21 +148,6 @@ public class Main {
 
 //        LOGGER.info("borders for X: (" + minX + ", " + maxX + ")");
 //        LOGGER.info("borders for Y: (" + minY + ", " + maxY + ")");
-    }
-
-    private static List<Integer> filterTrajWithDistLessThan(List<Trajectory> trajectories, Double[][] trajLCSSDistances,
-                                                            Double max) {
-        return IntStream.range(1, trajectories.size())
-                .filter(ind ->
-                        trajLCSSDistances[0][ind] < max)
-                .boxed().collect(toList());
-    }
-
-    private static List<Integer> getIndexesOfTrajWithLengthLessThan(List<Trajectory> trajectories, Integer maxLength) {
-        return IntStream.range(0, trajectories.size()).boxed()
-                .filter(ind ->
-                        trajectories.get(ind).length() < maxLength)
-                .collect(toList());
     }
 
 }

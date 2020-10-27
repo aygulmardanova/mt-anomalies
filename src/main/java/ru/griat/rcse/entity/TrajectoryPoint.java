@@ -2,6 +2,8 @@ package ru.griat.rcse.entity;
 
 import java.util.Objects;
 
+import static ru.griat.rcse.misc.Utils.ADAPT_COEFF;
+
 public class TrajectoryPoint implements Cloneable {
 
     private int x;
@@ -102,6 +104,14 @@ public class TrajectoryPoint implements Cloneable {
         }
         double d = Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2);
         return Math.sqrt(d);
+    }
+
+    public void setEpsilons(double cpDist, int maxX, int minX, int maxY, int minY) {
+        setCpDist(cpDist);
+        double epsilonX = ADAPT_COEFF * (maxX - minX) / cpDist;
+        setEpsilonX(cpDist < 250 ? 300.0 : epsilonX);
+        double epsilonY = ADAPT_COEFF * (maxY - minY) / cpDist;
+        setEpsilonY(cpDist < 250 ? 150.0 : epsilonY);
     }
 
     @Override

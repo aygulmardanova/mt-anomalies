@@ -13,7 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
 
@@ -26,7 +28,7 @@ public class Utils {
     public static final Path OUTPUT_IMG_DIR = Paths.get(RESOURCES_PATH.toString(), "output");
     public static final Path CSV_DIR = Paths.get(RESOURCES_PATH.toString(), "csv");
 
-    public static final String EXPERIMENT_ID = "exp7";
+    public static final String EXPERIMENT_ID = "exp11";
     public static final String[] INPUT_FILE_NAMES = {"1", "2", "3", "4"};
     public static final String[] INPUT_FILE_NAMES_FIRST = {"1"};
     public static final String INPUT_FILE_EXTENSION = "txt";
@@ -48,10 +50,10 @@ public class Utils {
 
     public static final LinkageMethod LINKAGE_METHOD = LinkageMethod.AVERAGE;
     public static final ApproximationMethod APPROXIMATION_METHOD = ApproximationMethod.REGRESSION;
-    public static final boolean IS_ADAPTIVE = false;
+    public static final boolean IS_ADAPTIVE = true;
     public static final double STATIC_COEFF = 0.15;
     public static final double ADAPT_COEFF = 20.0;
-    public static final int OUTPUT_CLUSTERS_COUNT = 8;
+    public static final int OUTPUT_CLUSTERS_COUNT = 9;
     public static final double RDP_EPSILON = 10.5;
     public static final int RDP_COUNT = MAX_KP_COUNT;
 
@@ -90,6 +92,16 @@ public class Utils {
                 return trajectory.getRdpPoints();
         }
         return Collections.emptyList();
+    }
+
+    public static void sortTrajectoryPoints(Trajectory trajectory) {
+        switch (APPROXIMATION_METHOD) {
+            case REGRESSION:
+                trajectory.setKeyPoints(trajectory.getKeyPoints().stream().sorted(Comparator.comparing(TrajectoryPoint::getTime)).collect(toList()));
+            case RDP:
+            case RDP_N:
+                trajectory.setRdpPoints(trajectory.getRdpPoints().stream().sorted(Comparator.comparing(TrajectoryPoint::getTime)).collect(toList()));
+        }
     }
 
     public static boolean checkTPValidity(TrajectoryPoint tp) {
@@ -141,6 +153,21 @@ public class Utils {
             copies.add(trCopy);
         }
         return copies;
+    }
+
+    private static List<Integer> filterTrajWithDistLessThan(List<Trajectory> trajectories, Double[][] trajLCSSDistances,
+                                                            Double max) {
+        return IntStream.range(1, trajectories.size())
+                .filter(ind ->
+                        trajLCSSDistances[0][ind] < max)
+                .boxed().collect(toList());
+    }
+
+    private static List<Integer> getIndexesOfTrajWithLengthLessThan(List<Trajectory> trajectories, Integer maxLength) {
+        return IntStream.range(0, trajectories.size()).boxed()
+                .filter(ind ->
+                        trajectories.get(ind).length() < maxLength)
+                .collect(toList());
     }
 
 }

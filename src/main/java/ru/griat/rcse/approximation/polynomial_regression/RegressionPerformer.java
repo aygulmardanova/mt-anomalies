@@ -21,6 +21,7 @@ import static ru.griat.rcse.misc.Utils.IMAGE_MIN_Y;
 import static ru.griat.rcse.misc.Utils.MAX_KP_COUNT;
 import static ru.griat.rcse.misc.Utils.copyTrajectories;
 import static ru.griat.rcse.misc.Utils.displayRegressionTrajectories;
+import static ru.griat.rcse.misc.Utils.sortTrajectoryPoints;
 
 public class RegressionPerformer {
 
@@ -81,6 +82,7 @@ public class RegressionPerformer {
         printKeyPointsStatisticsAndAddBorderPoints(currentTr);
         addFirstAndLastPoints(currentTr);
         calcAdditionalKeyPoints(currentTr);
+        sortTrajectoryPoints(currentTr);
     }
 
     private static void printRegressionResults(Trajectory currentTr) throws IOException {

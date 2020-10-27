@@ -32,6 +32,7 @@ public class Trajectory implements Cloneable {
         calcSpeed();
         calcAcceleration();
         this.keyPoints = new ArrayList<>();
+        this.rdpPoints = new ArrayList<>();
     }
 
     public Trajectory(int id, List<TrajectoryPoint> trajectoryPoints, double avgSpeed, double avgAcceleration) {

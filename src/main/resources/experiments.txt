@@ -71,3 +71,11 @@ keyPoints only: solutions, border points
 filtered
 static epsilon
 keyPoints only: solutions, border points
+
+11. exp11
+
+filtered
+RDP N, 9 points
+8 clusters
+keyPoints from rdp + middle points, in total ~8,9 points.
+

@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
-import ru.griat.rcse.misc.enums.LinkageMethod;
 import ru.griat.rcse.visualisation.DisplayImage;
 
 import java.io.IOException;
@@ -28,11 +27,6 @@ public class Clustering {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Clustering.class.getName());
 
-    /*
-     * Stores clusters in a list.
-     *
-     *
-     */
     private List<Cluster> clusters;
 
     private Double[][] trajLCSSDistances;
@@ -80,38 +74,17 @@ public class Clustering {
 
     /**
      * For each trajectory in @trajectories calc the adaptive epsilonX and epsilonY
-     * for each trajectory point
+     * for each trajectory point (key points for regression, and rdp points for RDP, RDP_N algorithms)
      *
-     * @param trajectories
+     * @param trajectories list of trajectories to calculate Euclidean distances between each pair
      */
     private void calcEuclDistancesToCP(List<Trajectory> trajectories) {
-//        final double[] maxEpsilonX = {0.0};
-//        final double[] maxEpsilonY = {0.0};
-//        final double[] minEpsilonX = {Double.MAX_VALUE};
-//        final double[] minEpsilonY = {Double.MAX_VALUE};
         trajectories.forEach(tr ->
-                tr.getKeyPoints().forEach(kp -> {
+                getTrajectoryPoints(tr).forEach(kp -> {
                     double cpDist = kp.distanceTo(cameraPoint);
-                    kp.setCpDist(cpDist);
-                    double epsilonX = ADAPT_COEFF * (maxX - minX) / cpDist;
-                    kp.setEpsilonX(cpDist < 250 ? 300.0 : epsilonX);
-                    double epsilonY = ADAPT_COEFF * (maxY - minY) / cpDist;
-                    kp.setEpsilonY(cpDist < 250 ? 150.0 : epsilonY);
-
-//                    if (epsilonX > maxEpsilonX[0])
-//                        maxEpsilonX[0] = epsilonX;
-//                    if (epsilonX < minEpsilonX[0])
-//                        minEpsilonX[0] = epsilonX;
-//                    if (epsilonY > maxEpsilonY[0])
-//                        maxEpsilonY[0] = epsilonY;
-//                    if (epsilonY < minEpsilonY[0])
-//                        minEpsilonY[0] = epsilonY;
+                    kp.setEpsilons(cpDist, maxX, minX, maxY, minY);
                 })
         );
-//        System.out.println(String.format("max for X: %.3f (pixels)", maxEpsilonX[0]));
-//        System.out.println(String.format("max for Y: %.3f (pixels)", maxEpsilonY[0]));
-//        System.out.println(String.format("min for X: %.3f (pixels)", minEpsilonX[0]));
-//        System.out.println(String.format("min for Y: %.3f (pixels)", minEpsilonY[0]));
     }
 
     /**
@@ -149,6 +122,18 @@ public class Clustering {
         return clusters;
     }
 
+    /**
+     * Trajectories classification
+     * Based on using defined clusters' models
+     * - compares input trajectory with each cluster by calculating the LCSS distance to the cluster model
+     * - finds the closest cluster taking into consideration threshold value *defining the maximum allowed distance)
+     * - - no cluster was found -> trajectory is anomalous (unknown behavior)
+     * - - cluster is found -> depends on the label of the cluster
+     *
+     * @param inputTrajectories A list of input trajectories to be classified
+     *
+     * Classifies each input trajectory and print the classification result
+     */
     public void classifyTrajectories(List<Trajectory> inputTrajectories) throws IOException {
         double lcssMax = 0.85;
         List<Trajectory> anomalousTrajectories = new ArrayList<>();
@@ -222,9 +207,9 @@ public class Clustering {
 //                        if (clusters.size() > 25 && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2))
 //                                || clusters.size() <= 50 && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] <= 0.91
 //                                || clusters.size() <= 25) {
-                            minClustDist = clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()];
-                            id1 = i1;
-                            id2 = i2;
+                        minClustDist = clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()];
+                        id1 = i1;
+                        id2 = i2;
 //                        }
                     }
                 }
@@ -469,7 +454,7 @@ public class Clustering {
     /**
      * Dunn's Validity Index (DI) = dist_min / diam_max
      * dist_min = min inter-cluster distance (minimum distance between two clusters;
-     * single-linkage -> min distance between two trajectories from wo clusters)
+     * single-linkage -> min distance between two trajectories from two clusters)
      * diam_max = max intra-cluster distance (maximum distance between two farthermost trajectories)
      */
     private void validateClusters() {
@@ -499,16 +484,16 @@ public class Clustering {
     }
 
     private void modelClusters() {
-        for (Cluster c: clusters) {
+        for (Cluster c : clusters) {
             if (c.getTrajectories().size() == 1) {
                 c.setClusterModel(c.getTrajectories().get(0));
                 continue;
             }
             Trajectory model = null;
             double avg = Double.MAX_VALUE;
-            for (Trajectory t: c.getTrajectories()) {
+            for (Trajectory t : c.getTrajectories()) {
                 double sum = 0.0;
-                for (Trajectory t1: c.getTrajectories()) {
+                for (Trajectory t1 : c.getTrajectories()) {
                     if (t1 != t)
                         sum += t.getId() < t1.getId() ? trajLCSSDistances[t.getId()][t1.getId()] : trajLCSSDistances[t1.getId()][t.getId()];
                 }
