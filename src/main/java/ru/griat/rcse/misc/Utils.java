@@ -30,7 +30,7 @@ public class Utils {
     public static final Path OUTPUT_IMG_DIR = Paths.get(RESOURCES_PATH.toString(), "output");
     public static final Path CSV_DIR = Paths.get(RESOURCES_PATH.toString(), "csv");
 
-    public static final String EXPERIMENT_ID = "exp11";
+    public static final String EXPERIMENT_ID = "exp12";
     public static final String[] INPUT_FILE_NAMES = {"1", "2", "3", "4"};
     public static final String[] INPUT_FILE_NAMES_FIRST = {"1"};
     public static final String INPUT_FILE_EXTENSION = "txt";
@@ -47,7 +47,7 @@ public class Utils {
 
     public static final int MIN_LENGTH = 10;
     public static final int MIN_TOTAL_DIST = 80;
-    public static final int MAX_KP_COUNT = 9;
+    public static final int MAX_KP_COUNT = 8;
     public static final int TIME_STEP = 5;
 
     public static final ClusteringMethod CLUSTERING_METHOD = ClusteringMethod.HIERARCHICAL;
@@ -56,7 +56,7 @@ public class Utils {
     public static final boolean IS_ADAPTIVE = true;
     public static final double STATIC_COEFF = 0.15;
     public static final double ADAPT_COEFF = 20.0;
-    public static final int OUTPUT_CLUSTERS_COUNT = 9;
+    public static final int OUTPUT_CLUSTERS_COUNT = 7;
     public static final double RDP_EPSILON = 10.5;
     public static final int RDP_COUNT = MAX_KP_COUNT;
 

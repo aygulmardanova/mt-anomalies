@@ -78,4 +78,9 @@ filtered
 RDP N, 9 points
 8 clusters
 keyPoints from rdp + middle points, in total ~8,9 points.
+adapt.coeff = 20.0
 
+12. exp12
+RDP 8 points, remove redundant points with coeff 2 after RDP_N
+
+13. exp13

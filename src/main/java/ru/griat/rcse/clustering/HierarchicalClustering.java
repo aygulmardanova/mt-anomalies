@@ -25,7 +25,7 @@ import static ru.griat.rcse.misc.Utils.STATIC_COEFF;
 import static ru.griat.rcse.misc.Utils.getImgFileName;
 import static ru.griat.rcse.misc.Utils.getTrajectoryPoints;
 
-public class HierarchicalClustering {
+public class HierarchicalClustering implements Clustering {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HierarchicalClustering.class.getName());
 
@@ -39,6 +39,7 @@ public class HierarchicalClustering {
     private int maxY;
     private TrajectoryPoint cameraPoint;
 
+    @Override
     public TrajectoryPoint getCameraPoint() {
         return cameraPoint;
     }
@@ -92,6 +93,7 @@ public class HierarchicalClustering {
      * @param trajectories A database of trajectories
      * @return Clusters of trajectories
      */
+    @Override
     public List<Cluster> cluster(List<Trajectory> trajectories) {
         initClusters(trajectories);
         whileCluster(OUTPUT_CLUSTERS_COUNT);
@@ -121,6 +123,7 @@ public class HierarchicalClustering {
      *
      * Classifies each input trajectory and print the classification result
      */
+    @Override
     public void classifyTrajectories(List<Trajectory> inputTrajectories) throws IOException {
         double lcssMax = 0.85;
         List<Trajectory> anomalousTrajectories = new ArrayList<>();
@@ -131,7 +134,7 @@ public class HierarchicalClustering {
 
             System.out.println(String.format("------tr %s-----", it.getId()));
             clusters.forEach(cl -> {
-                double curLcss = calcLCSSDist(it, cl.getClusterModel());
+                double curLcss = calcDist(it, cl.getClusterModel());
                 if (curLcss < minLcss[0]) {
                     minLcss[0] = curLcss;
                     closestCluster[0] = cl;
@@ -191,13 +194,13 @@ public class HierarchicalClustering {
 //                            && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2), trajLCSSDistances)
                     ) {
 //                        FIXME: for normal clustering uncomment lines
-//                        if (clusters.size() > 25 && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2), trajLCSSDistances)
-//                                || clusters.size() <= 50 && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] <= 0.91
-//                                || clusters.size() <= 25) {
+                        if (clusters.size() > 25 && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2), trajLCSSDistances)
+                                || clusters.size() <= 50 && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] <= 0.91
+                                || clusters.size() <= 25) {
                         minClustDist = clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()];
                         id1 = i1;
                         id2 = i2;
-//                        }
+                        }
                     }
                 }
             }
@@ -224,7 +227,8 @@ public class HierarchicalClustering {
      * @param t2 second trajectory
      * @return LCSS distance for t1 and t2
      */
-    public Double calcLCSSDist(Trajectory t1, Trajectory t2) {
+    @Override
+    public Double calcDist(Trajectory t1, Trajectory t2) {
         int m = getTrajectoryPoints(t1).size();
         int n = getTrajectoryPoints(t2).size();
 

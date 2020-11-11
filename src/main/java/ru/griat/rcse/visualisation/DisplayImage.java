@@ -196,8 +196,8 @@ public class DisplayImage {
             return;
         }
 
-        for (int i = -1; i < 1; i++) {
-            for (int j = -1; j < 1; j++) {
+        for (int i = -1; i < 2; i++) {
+            for (int j = -1; j < 2; j++) {
                 img.setRGB(tp.getX() + i, tp.getY() + j, clusterColors[this.i]);
             }
         }
