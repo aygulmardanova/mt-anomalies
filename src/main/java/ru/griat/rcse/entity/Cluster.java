@@ -33,6 +33,11 @@ public class Cluster {
         this.trajectories = trajectories;
     }
 
+    public Cluster(int id, List<Trajectory> trajectories) {
+        this.id = id;
+        this.trajectories = trajectories;
+    }
+
     public int getId() {
         return id;
     }

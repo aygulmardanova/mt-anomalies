@@ -101,7 +101,7 @@ public class HierarchicalClustering implements Clustering {
         validateClusters();
         classifyClusters();
         modelClusters();
-        System.out.println(clusters.size() + " clusters in total");
+        LOGGER.info("{} clusters in total", clusters.size());
         for (int i = 0; i < clusters.size(); i++) {
             for (int j = i + 1; j < clusters.size(); j++) {
 //                if (clustLCSSDistances[clusters.get(i).getId()][clusters.get(j).getId()] < 0.5)

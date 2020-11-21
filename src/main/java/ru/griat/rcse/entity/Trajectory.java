@@ -1,5 +1,6 @@
 package ru.griat.rcse.entity;
 
+import org.apache.commons.math3.ml.clustering.Clusterable;
 import ru.griat.rcse.approximation.polynomial_regression.PolynomialRegression;
 
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static ru.griat.rcse.misc.Utils.*;
 
-public class Trajectory implements Cloneable {
+public class Trajectory implements Cloneable, Clusterable {
 
     private int id;
 
@@ -21,6 +22,8 @@ public class Trajectory implements Cloneable {
 
     private List<TrajectoryPoint> keyPoints;
     private List<TrajectoryPoint> rdpPoints;
+
+    private double[] point;
 
     private double avgSpeed;
 
@@ -139,6 +142,15 @@ public class Trajectory implements Cloneable {
         }
         if (!rdpPoints.contains(rdpPoint) && checkTPValidity(rdpPoint))
             this.rdpPoints.add(rdpPoint.clone());
+    }
+
+    @Override
+    public double[] getPoint() {
+        return point;
+    }
+
+    public void setPoint(double[] point) {
+        this.point = point;
     }
 
     public Integer length() {

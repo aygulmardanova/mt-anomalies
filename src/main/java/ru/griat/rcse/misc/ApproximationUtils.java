@@ -31,7 +31,10 @@ public class ApproximationUtils {
             case NONE:
                 break;
             case REGRESSION:
+//                long start = System.currentTimeMillis();
                 new RegressionPerformer().performRegression(trajectories, input);
+//                long end = System.currentTimeMillis();
+//                LOGGER.info("whole regression time is {}", end - start);
                 break;
             case RDP:
             case RDP_N:
@@ -162,7 +165,7 @@ public class ApproximationUtils {
         OptionalInt rightTime = simplified.stream().filter(rpTime -> rpTime.getTime() >= op.getTime()).mapToInt(TrajectoryPoint::getTime).min();
         OptionalInt leftTime = simplified.stream().filter(rpTime -> rpTime.getTime() <= op.getTime()).mapToInt(TrajectoryPoint::getTime).max();
         if (rightTime.isEmpty() || leftTime.isEmpty()) {
-            LOGGER.error("No surrounding RDP point found, while each original point must have 2 surroinding RDP points.");
+//            LOGGER.error("No surrounding RDP point found, while each original point must have 2 surroinding RDP points.");
             return 0.0;
         }
         if (rightTime.getAsInt() == leftTime.getAsInt())
@@ -172,6 +175,26 @@ public class ApproximationUtils {
         if (rightTP.equalsSpatially(op) || leftTP.equalsSpatially(op))
             return 0.0;
         return new Line(leftTP, rightTP).distance(op);
+    }
+
+    public static void removeRedundantPoints(List<Trajectory> trajectories, double coeff) {
+        for (Trajectory currentTr : trajectories) {
+            if (currentTr.length() > 12 || currentTr.getRdpPoints().size() < 6)
+                continue;
+            double totalDist = currentTr.totalDist();
+//            average inter-points distance in the original trajectory
+            double avgDistUnit = totalDist / currentTr.getTrajectoryPoints().size();
+//            don't consider first and last approximation points
+            for (int i = 1; i < currentTr.getRdpPoints().size() - 1; i++) {
+                TrajectoryPoint currentTP = currentTr.getRdpPoints().get(i);
+                if (currentTP.distanceTo(currentTr.get(i - 1)) < coeff * avgDistUnit
+                        || currentTP.distanceTo(currentTr.get(i + 1)) < coeff * avgDistUnit) {
+//                    LOGGER.info(MessageFormat.format("RDP point {0} was deleted", i));
+                    currentTr.getRdpPoints().remove(currentTP);
+                }
+            }
+        }
+
     }
 
     public static void printTrajectoriesLengthsStatistics(List<Trajectory> trajectories) {

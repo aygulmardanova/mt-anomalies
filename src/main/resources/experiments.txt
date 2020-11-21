@@ -84,3 +84,4 @@ adapt.coeff = 20.0
 RDP 8 points, remove redundant points with coeff 2 after RDP_N
 
 13. exp13
+adaptive func: smaller coeff and square in lower part

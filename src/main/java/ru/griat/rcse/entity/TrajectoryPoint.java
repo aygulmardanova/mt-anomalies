@@ -108,9 +108,9 @@ public class TrajectoryPoint implements Cloneable {
 
     public void setEpsilons(double cpDist, int maxX, int minX, int maxY, int minY) {
         setCpDist(cpDist);
-        double epsilonX = ADAPT_COEFF * (maxX - minX) / cpDist;
-        setEpsilonX(cpDist < 250 ? 300.0 : epsilonX);
-        double epsilonY = ADAPT_COEFF * (maxY - minY) / cpDist;
+        double epsilonX = ADAPT_COEFF / 20 * (maxX - minX) * (maxX - minX) / cpDist;
+        setEpsilonX(cpDist < 250 ? 250.0 : epsilonX);
+        double epsilonY = ADAPT_COEFF / 10 * (maxY - minY) * (maxX - minX) / cpDist;
         setEpsilonY(cpDist < 250 ? 150.0 : epsilonY);
     }
 

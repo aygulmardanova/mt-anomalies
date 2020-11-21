@@ -31,12 +31,10 @@ public class Main {
             List<Trajectory> trajectories = parseTrajectories(getFileName(input));
             List<Trajectory> initialTrajectories = trajectories;
 
-
             trajectories = filterTrajectories(trajectories);
             LOGGER.info("Total approximated trajectories count: {}", trajectories.size());
 
             performApproximation(trajectories, input);
-//            displayTrajectories(getImgFileName(input), trajectories.stream().filter(tr -> tr.getRegressionX().degree() < 2 || tr.getRegressionY().degree() < 2).collect(toList()));
 
             switch (CLUSTERING_METHOD) {
                 case HIERARCHICAL:
@@ -44,12 +42,11 @@ public class Main {
                     clustering = new HierarchicalClustering(initialTrajectories);
                     setInputBorders(initialTrajectories, (HierarchicalClustering) clustering);
 
-//                    long distStart = System.currentTimeMillis();
-//                    calcDistances(trajectories);
-//                    long distEnd = System.currentTimeMillis();
-//                    LOGGER.info("Total dist calculation time is: {} milliseconds", distEnd - distStart);
-//                    trajLCSSDistances = ((HierarchicalClustering) clustering).getTrajLCSSDistances();
-//                    new CSVProcessing().writeCSV(trajLCSSDistances, 0, initialTrajectories.size(), 0, initialTrajectories.size(), EXPERIMENT_ID, input);
+                    if (true)
+                        return;
+                    calcDistances(trajectories);
+                    trajLCSSDistances = ((HierarchicalClustering) clustering).getTrajLCSSDistances();
+                    new CSVProcessing().writeCSV(trajLCSSDistances, 0, initialTrajectories.size(), 0, initialTrajectories.size(), EXPERIMENT_ID, input);
 
                     trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
                     new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
@@ -59,10 +56,10 @@ public class Main {
                     clustering = new DBSCANClustering();
             }
 
-            long clStart = System.currentTimeMillis();
+//            long clStart = System.currentTimeMillis();
             List<Cluster> clusters = clustering.cluster(trajectories);
-            long clEnd = System.currentTimeMillis();
-            LOGGER.info("Total clustering time is: {} milliseconds", clEnd - clStart);
+//            long clEnd = System.currentTimeMillis();
+//            LOGGER.info("Total clustering time is: {} milliseconds", clEnd - clStart);
             displayClusters(getImgFileName(input), clusters.stream().filter(cl -> !cl.getNormal()).collect(toList()), false);
             displayClusters(getImgFileName(input), clusters, false);
 

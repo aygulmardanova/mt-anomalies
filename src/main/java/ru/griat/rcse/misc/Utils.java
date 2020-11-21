@@ -30,14 +30,14 @@ public class Utils {
     public static final Path OUTPUT_IMG_DIR = Paths.get(RESOURCES_PATH.toString(), "output");
     public static final Path CSV_DIR = Paths.get(RESOURCES_PATH.toString(), "csv");
 
-    public static final String EXPERIMENT_ID = "exp12";
+    public static final String EXPERIMENT_ID = "exp13";
     public static final String[] INPUT_FILE_NAMES = {"1", "2", "3", "4"};
     public static final String[] INPUT_FILE_NAMES_FIRST = {"1"};
     public static final String INPUT_FILE_EXTENSION = "txt";
     public static final String INPUT_IMG_EXTENSION = "jpg";
     public static final String CSV_EXTENSION = "csv";
 
-//    time between frames in seconds (here 0.01 sec)
+//    time between frames in seconds
     public static final double INTER_FRAME_TIME = 0.01;
 
     public static final int IMAGE_MIN_X = 0;
@@ -55,8 +55,10 @@ public class Utils {
     public static final ApproximationMethod APPROXIMATION_METHOD = ApproximationMethod.REGRESSION;
     public static final boolean IS_ADAPTIVE = true;
     public static final double STATIC_COEFF = 0.15;
-    public static final double ADAPT_COEFF = 20.0;
-    public static final int OUTPUT_CLUSTERS_COUNT = 7;
+    public static final double ADAPT_COEFF = 10.0;
+    public static final double DBSCAN_EPS = 270.0;
+    public static final int DBSCAN_MIN_PTS = 20;
+    public static final int OUTPUT_CLUSTERS_COUNT = 11;
     public static final double RDP_EPSILON = 10.5;
     public static final int RDP_COUNT = MAX_KP_COUNT;
 

@@ -49,12 +49,13 @@ public class RDPReducer {
             result.addAll(reduced2.subList(1, reduced2.size()));
             return result;
         } else {
-            return line.asList();
+            return new ArrayList<>(line.asList());
         }
     }
 
     /**
-     * Reduces number of points in given series using Ramer-Douglas-Peucker N algorithm to the total amount of given 'count'.
+     * Reduces number of points in given series using Douglas-Peucker N algorithm
+     * to the total amount of given 'count'.
      *
      * @param points    initial, ordered list of points {@link TrajectoryPoint}
      * @param count     allowed margin of the resulting curve, has to be > 0
