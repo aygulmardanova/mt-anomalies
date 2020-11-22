@@ -42,15 +42,13 @@ public class Main {
                     clustering = new HierarchicalClustering(initialTrajectories);
                     setInputBorders(initialTrajectories, (HierarchicalClustering) clustering);
 
-                    if (true)
-                        return;
                     calcDistances(trajectories);
                     trajLCSSDistances = ((HierarchicalClustering) clustering).getTrajLCSSDistances();
                     new CSVProcessing().writeCSV(trajLCSSDistances, 0, initialTrajectories.size(), 0, initialTrajectories.size(), EXPERIMENT_ID, input);
 
-                    trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
-                    new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
-                    ((HierarchicalClustering) clustering).setTrajLCSSDistances(trajLCSSDistances);
+//                    trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
+//                    new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
+//                    ((HierarchicalClustering) clustering).setTrajLCSSDistances(trajLCSSDistances);
                     break;
                 case DBSCAN:
                     clustering = new DBSCANClustering();

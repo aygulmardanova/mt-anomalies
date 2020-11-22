@@ -26,13 +26,13 @@ public class ClusteringUtils {
      * @param trajectories list of trajectories to calculate Euclidean distances between each pair
      */
     public static void calcEuclDistancesToCP(List<Trajectory> trajectories, TrajectoryPoint cameraPoint, int maxX, int minX, int maxY, int minY) {
-        final double[] minCPDist = {Double.MAX_VALUE};
+//        final double[] minCPDist = {Double.MAX_VALUE};
         final double[] minEpsX = {Double.MAX_VALUE};
         final double[] minEpsY = {Double.MAX_VALUE};
-        final double[] maxCPDist = {0.0};
+//        final double[] maxCPDist = {0.0};
         final double[] maxEpsX = {0.0};
         final double[] maxEpsY = {0.0};
-        final double[] sumCPDist = { 0.0 };
+//        final double[] sumCPDist = { 0.0 };
         final double[] sumEpsX = { 0.0 };
         final double[] sumEpsY = { 0.0 };
         final int[] count = {0};
@@ -41,11 +41,11 @@ public class ClusteringUtils {
                     double cpDist = kp.distanceTo(cameraPoint);
                     kp.setEpsilons(cpDist, maxX, minX, maxY, minY);
 
-                    if (cpDist > maxCPDist[0])
-                        maxCPDist[0] = cpDist;
-                    if (cpDist < minCPDist[0])
-                        minCPDist[0] = cpDist;
-
+//                    if (cpDist > maxCPDist[0])
+//                        maxCPDist[0] = cpDist;
+//                    if (cpDist < minCPDist[0])
+//                        minCPDist[0] = cpDist;
+//
                     if (kp.getEpsilonX() > maxEpsX[0])
                         maxEpsX[0] = kp.getEpsilonX();
                     if (kp.getEpsilonY() > maxEpsY[0])
@@ -54,15 +54,15 @@ public class ClusteringUtils {
                         minEpsX[0] = kp.getEpsilonX();
                     if (kp.getEpsilonY() > minEpsY[0])
                         minEpsY[0] = kp.getEpsilonY();
-                    sumCPDist[0] += cpDist;
+//                    sumCPDist[0] += cpDist;
                     sumEpsX[0] += kp.getEpsilonX();
                     sumEpsY[0] += kp.getEpsilonY();
                     count[0]++;
                 })
         );
-        LOGGER.info("minCPDist is {}", minCPDist[0]);
-        LOGGER.info("avgCPDist is {}", sumCPDist[0] / count[0]);
-        LOGGER.info("maxCPDist is {}", maxCPDist[0]);
+//        LOGGER.info("minCPDist is {}", minCPDist[0]);
+//        LOGGER.info("avgCPDist is {}", sumCPDist[0] / count[0]);
+//        LOGGER.info("maxCPDist is {}", maxCPDist[0]);
         LOGGER.info("minEpsX is {}", minEpsX[0]);
         LOGGER.info("avgEpsX is {}", sumEpsX[0] / count[0]);
         LOGGER.info("maxEpsX is {}", maxEpsX[0]);

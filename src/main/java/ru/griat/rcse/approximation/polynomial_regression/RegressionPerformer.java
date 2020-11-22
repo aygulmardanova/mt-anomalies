@@ -31,6 +31,7 @@ public class RegressionPerformer {
         int degreeMargin = 2;
         double thresholdR2 = 0.98;
         double minR2forX = 1.0, minR2forY = 1.0;
+        long totalKPtime = 0;
 
         for (Trajectory trajectory : trajectories) {
             PolynomialRegression regressionX = null;
@@ -59,9 +60,13 @@ public class RegressionPerformer {
             if (regressionY.R2() < minR2forY) {
                 minR2forY = regressionY.R2();
             }
+            long startHere = System.currentTimeMillis();
             calculateKeyPoints(trajectory);
+            long endHere = System.currentTimeMillis();
 //            printRegressionResults(currentTr);
         }
+//        LOGGER.info("total key points calculation time {}", endHere - startHere);
+
         positionalErrors(trajectories);
 //        printStatistics(trajectories, input, minDegree, minR2forX, minR2forY);
         printTrajectoriesLengthsStatistics(trajectories);

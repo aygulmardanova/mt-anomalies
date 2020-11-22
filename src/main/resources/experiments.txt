@@ -85,3 +85,6 @@ RDP 8 points, remove redundant points with coeff 2 after RDP_N
 
 13. exp13
 adaptive func: smaller coeff and square in lower part
+
+14. exp14
+regression, hierarchical, adapt_X = 15, adapt_Y = 20

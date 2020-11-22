@@ -30,7 +30,7 @@ public class Utils {
     public static final Path OUTPUT_IMG_DIR = Paths.get(RESOURCES_PATH.toString(), "output");
     public static final Path CSV_DIR = Paths.get(RESOURCES_PATH.toString(), "csv");
 
-    public static final String EXPERIMENT_ID = "exp13";
+    public static final String EXPERIMENT_ID = "exp15";
     public static final String[] INPUT_FILE_NAMES = {"1", "2", "3", "4"};
     public static final String[] INPUT_FILE_NAMES_FIRST = {"1"};
     public static final String INPUT_FILE_EXTENSION = "txt";
