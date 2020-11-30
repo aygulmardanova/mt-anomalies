@@ -42,27 +42,25 @@ public class Main {
                     clustering = new HierarchicalClustering(initialTrajectories);
                     setInputBorders(initialTrajectories, (HierarchicalClustering) clustering);
 
-                    calcDistances(trajectories);
-                    trajLCSSDistances = ((HierarchicalClustering) clustering).getTrajLCSSDistances();
-                    new CSVProcessing().writeCSV(trajLCSSDistances, 0, initialTrajectories.size(), 0, initialTrajectories.size(), EXPERIMENT_ID, input);
+//                    FIXME: uncomment following lines to calculate LCSS distances and write to file:
+//                    calcDistances(trajectories);
+//                    trajLCSSDistances = ((HierarchicalClustering) clustering).getTrajLCSSDistances();
+//                    new CSVProcessing().writeCSV(trajLCSSDistances, 0, initialTrajectories.size(), 0, initialTrajectories.size(), EXPERIMENT_ID, input);
 
-//                    trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
-//                    new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
-//                    ((HierarchicalClustering) clustering).setTrajLCSSDistances(trajLCSSDistances);
+                    trajLCSSDistances = new Double[initialTrajectories.size()][initialTrajectories.size()];
+                    new CSVProcessing().readCSV(trajLCSSDistances, EXPERIMENT_ID, input);
+                    ((HierarchicalClustering) clustering).setTrajLCSSDistances(trajLCSSDistances);
                     break;
                 case DBSCAN:
-                    clustering = new DBSCANClustering();
+                    clustering = new DBSCANClustering(initialTrajectories.size());
             }
 
-//            long clStart = System.currentTimeMillis();
             List<Cluster> clusters = clustering.cluster(trajectories);
-//            long clEnd = System.currentTimeMillis();
-//            LOGGER.info("Total clustering time is: {} milliseconds", clEnd - clStart);
             displayClusters(getImgFileName(input), clusters.stream().filter(cl -> !cl.getNormal()).collect(toList()), false);
             displayClusters(getImgFileName(input), clusters, false);
+            displayClusterModels(getImgFileName(input), clusters, false);
 
-//            List<Trajectory> inputTrajectories = trajectories.stream().filter(tr -> List.of(100, 101).contains(tr.getId())).collect(toList());
-//            clustering.classifyTrajectories(inputTrajectories);
+            clustering.classifyTrajectories(trajectories);
 //            clustering.classifyTrajectories(generateTestTrajectories(clustering.getCameraPoint()));
         }
     }
@@ -81,15 +79,15 @@ public class Main {
     }
 
     private static double logCalcDist(Trajectory t1, Trajectory t2) {
-//        LOGGER.info("-----");
+        LOGGER.info("-----");
         double dist = clustering.calcDist(t1, t2);
 
-//        if (!Double.valueOf(1.0).equals(dist)) {
-//            LOGGER.info("Calculating distance between trajectories: " +
-//                    "\n1) " + t1 + "; " +
-//                    "\n2) " + t2);
-//            LOGGER.info("dist(" + t1.getId() + ", " + t2.getId() + ") = " + dist);
-//        }
+        if (!Double.valueOf(1.0).equals(dist)) {
+            LOGGER.info("Calculating distance between trajectories: " +
+                    "\n1) " + t1 + "; " +
+                    "\n2) " + t2);
+            LOGGER.info("dist(" + t1.getId() + ", " + t2.getId() + ") = " + dist);
+        }
 
         return dist;
     }

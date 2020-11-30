@@ -1,22 +1,19 @@
 package ru.griat.rcse.clustering;
 
-import com.google.common.math.Quantiles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.griat.rcse.entity.Cluster;
 import ru.griat.rcse.entity.Trajectory;
 import ru.griat.rcse.entity.TrajectoryPoint;
+import ru.griat.rcse.misc.ClusteringUtils;
 import ru.griat.rcse.visualisation.DisplayImage;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.lang.Math.*;
 import static ru.griat.rcse.misc.ClusteringUtils.calcEuclDistancesToCP;
-import static ru.griat.rcse.misc.ClusteringUtils.containsAbsolutelyDifferentTraj;
 import static ru.griat.rcse.misc.ClusteringUtils.head;
 import static ru.griat.rcse.misc.Utils.IS_ADAPTIVE;
 import static ru.griat.rcse.misc.Utils.LINKAGE_METHOD;
@@ -68,11 +65,6 @@ public class HierarchicalClustering implements Clustering {
         this.maxY = maxY;
         this.cameraPoint = new TrajectoryPoint((int) Math.round(0.25 * maxX), (int) Math.round(0.95 * maxY));
         calcEuclDistancesToCP(trajectories, cameraPoint, maxX, minX, maxY, minY);
-//        try {
-//            new DisplayImage().displayAndSave(getImgFileName("1"), cameraPoint, false);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
     }
 
     /**
@@ -97,17 +89,15 @@ public class HierarchicalClustering implements Clustering {
     public List<Cluster> cluster(List<Trajectory> trajectories) {
         initClusters(trajectories);
         whileCluster(OUTPUT_CLUSTERS_COUNT);
-        printClusters();
-        validateClusters();
-        classifyClusters();
+
+        ClusteringUtils.printClusters(clusters);
+        ClusteringUtils.validateClusters(clusters, clustLCSSDistances, trajLCSSDistances);
+        long start = System.currentTimeMillis();
+        ClusteringUtils.classifyClusters(clusters);
         modelClusters();
+        long end = System.currentTimeMillis();
+        LOGGER.info("total classification time {}", end - start);
         LOGGER.info("{} clusters in total", clusters.size());
-        for (int i = 0; i < clusters.size(); i++) {
-            for (int j = i + 1; j < clusters.size(); j++) {
-//                if (clustLCSSDistances[clusters.get(i).getId()][clusters.get(j).getId()] < 0.5)
-//                System.out.println(String.format("(%d, %d) = %.2f |  ", clusters.get(i).getId(), clusters.get(j).getId(), clustLCSSDistances[clusters.get(i).getId()][clusters.get(j).getId()]));
-            }
-        }
         return clusters;
     }
 
@@ -144,15 +134,9 @@ public class HierarchicalClustering implements Clustering {
             if (closestCluster[0] == null || minLcss[0] > lcssMax) {
                 System.out.println("anomalous trajectory");
                 anomalousTrajectories.add(it);
-//                try {
-//                    new DisplayImage().displayClusterAndTrajectory(getImgFileName(INPUT_FILE_NAMES_FIRST[0]), Collections.emptyList(), it);
-//                } catch (IOException ignored) {}
             } else {
                 System.out.println(String.format("closest cl is %s", closestCluster[0].getId()));
                 System.out.println(closestCluster[0].getNormal() ? "normal trajectory" : "anomalous trajectory");
-//                try {
-//                    new DisplayImage().displayClusterAndTrajectory(getImgFileName(INPUT_FILE_NAMES_FIRST[0]), closestCluster[0], it);
-//                } catch (IOException ignored) {}
             }
         });
         new DisplayImage().displayAndSave(getImgFileName("1"), null, null, anomalousTrajectories, false);
@@ -162,12 +146,6 @@ public class HierarchicalClustering implements Clustering {
 //    initialisation
         trajectories.forEach(trajectory ->
                 clusters.add(new Cluster(trajectory.getId(), trajectory)));
-    }
-
-    private void printClusters() {
-        for (Cluster cluster : clusters) {
-            LOGGER.info(cluster.toString());
-        }
     }
 
     /**
@@ -194,13 +172,13 @@ public class HierarchicalClustering implements Clustering {
 //                            && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2), trajLCSSDistances)
                     ) {
 //                        FIXME: for normal clustering uncomment lines
-                        if (clusters.size() > 25 && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2), trajLCSSDistances)
-                                || clusters.size() <= 50 && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] <= 0.91
-                                || clusters.size() <= 25) {
+//                        if (clusters.size() > 25 && !containsAbsolutelyDifferentTraj(clusters.get(i1), clusters.get(i2), trajLCSSDistances)
+//                                || clusters.size() <= 50 && clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()] <= 0.91
+//                                || clusters.size() <= 25) {
                         minClustDist = clustLCSSDistances[clusters.get(i1).getId()][clusters.get(i2).getId()];
                         id1 = i1;
                         id2 = i2;
-                        }
+//                        }
                     }
                 }
             }
@@ -420,38 +398,6 @@ public class HierarchicalClustering implements Clustering {
         return dist;
     }
 
-    /**
-     * Dunn's Validity Index (DI) = dist_min / diam_max
-     * dist_min = min inter-cluster distance (minimum distance between two clusters;
-     * single-linkage -> min distance between two trajectories from two clusters)
-     * diam_max = max intra-cluster distance (maximum distance between two farthermost trajectories)
-     */
-    private void validateClusters() {
-        clusters.forEach(cluster -> cluster.getTrajectories().sort(Comparator.comparing(Trajectory::getId)));
-
-        double minDist = Double.MAX_VALUE;
-        for (int i = 0; i < clusters.size(); i++) {
-            for (int j = i + 1; j < clusters.size(); j++) {
-                if (clustLCSSDistances[clusters.get(i).getId()][clusters.get(j).getId()] < minDist)
-                    minDist = clustLCSSDistances[clusters.get(i).getId()][clusters.get(j).getId()];
-            }
-        }
-
-        double maxDiam = clusters.stream().mapToDouble(cluster -> {
-            double maxDist = 0;
-            for (int i = 0; i < cluster.getTrajectories().size(); i++) {
-                for (int j = i + 1; j < cluster.getTrajectories().size(); j++) {
-                    if (trajLCSSDistances[cluster.getTrajectories().get(i).getId()][cluster.getTrajectories().get(j).getId()] > maxDist)
-                        maxDist = trajLCSSDistances[cluster.getTrajectories().get(i).getId()][cluster.getTrajectories().get(j).getId()];
-                }
-            }
-            return maxDist;
-        }).max().getAsDouble();
-
-        double DI = minDist / maxDiam;
-        LOGGER.info(String.format("DI = %.2f", DI));
-    }
-
     private void modelClusters() {
         for (Cluster c : clusters) {
             if (c.getTrajectories().size() == 1) {
@@ -474,14 +420,6 @@ public class HierarchicalClustering implements Clustering {
             }
             c.setClusterModel(model);
         }
-    }
-
-    private void classifyClusters() {
-        List<Integer> cardinalities = clusters.stream().map(cl -> cl.getTrajectories().size()).sorted().collect(Collectors.toList());
-        double limit = Quantiles.quartiles().index(1).compute(cardinalities);
-        clusters.forEach(cl -> {
-            cl.setNormal(cl.getTrajectories().size() >= limit);
-        });
     }
 
 }

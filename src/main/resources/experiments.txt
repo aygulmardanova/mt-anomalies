@@ -83,8 +83,8 @@ adapt.coeff = 20.0
 12. exp12
 RDP 8 points, remove redundant points with coeff 2 after RDP_N
 
-13. exp13
-adaptive func: smaller coeff and square in lower part
-
 14. exp14
 regression, hierarchical, adapt_X = 15, adapt_Y = 20
+
+15. exp15
+rdp_n, 8, form 6.1.2 (coeff X = 15, coeff Y = 20, same limits - 250 and 250 )

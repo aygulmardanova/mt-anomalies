@@ -41,6 +41,15 @@ public class DisplayImage {
             Color.DARK_GRAY.getRGB(),
     };
 
+    public void displayAndSaveClusterModels(String inputFileName, String outputFileName, String subDir,
+                                       java.util.List<Cluster> clusters, boolean save) throws IOException {
+        BufferedImage img = ImageIO.read(new File(getFileDir(INPUT_FILE_DIR, inputFileName)));
+
+        drawClusterModels(img, clusters);
+        displayImage(img);
+        if (save) saveImage(outputFileName, subDir, img);
+    }
+
     public void displayAndSaveClusters(String inputFileName, String outputFileName, String subDir,
                                        java.util.List<Cluster> clusters, boolean save) throws IOException {
         BufferedImage img = ImageIO.read(new File(getFileDir(INPUT_FILE_DIR, inputFileName)));
@@ -135,6 +144,30 @@ public class DisplayImage {
      * @param img      output image to display clustered trajectories
      * @param clusters array of input clusters
      */
+    private void drawClusterModels(BufferedImage img, java.util.List<Cluster> clusters) {
+        clusters.forEach(c -> {
+            c.getTrajectories().forEach(t -> {
+                t.getTrajectoryPoints().forEach(tp ->
+                        drawBoldTrajectoryPoint(img, tp));
+            });
+            int oldI = this.i;
+            this.i = 11;
+            if (c.getClusterModel() != null) {
+                c.getClusterModel().getTrajectoryPoints().forEach(kp -> {
+                    drawExtraBoldTrajectoryPoint(img, kp);
+                });
+            }
+            this.i = oldI;
+            increaseI();
+        });
+    }
+
+    /**
+     * Draws trajectories on an image
+     *
+     * @param img      output image to display clustered trajectories
+     * @param clusters array of input clusters
+     */
     private void drawClusters(BufferedImage img, java.util.List<Cluster> clusters) {
         clusters.forEach(c -> {
             c.getTrajectories().forEach(t -> {
@@ -209,7 +242,7 @@ public class DisplayImage {
 //            LOGGER.error("Out of image borders: (" + tp.getX() + ", " + tp.getY() + ")");
             return;
         }
-        for (int i = -2; i < 3; i++) {
+        for (int i = -2; i < 4; i++) {
             for (int j = -2; j < 3; j++) {
                 try {
                     img.setRGB(tp.getX() + i, tp.getY() + j, clusterColors[this.i]);

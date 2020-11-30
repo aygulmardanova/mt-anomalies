@@ -52,12 +52,14 @@ public class Utils {
 
     public static final ClusteringMethod CLUSTERING_METHOD = ClusteringMethod.HIERARCHICAL;
     public static final LinkageMethod LINKAGE_METHOD = LinkageMethod.AVERAGE;
-    public static final ApproximationMethod APPROXIMATION_METHOD = ApproximationMethod.REGRESSION;
+    public static final ApproximationMethod APPROXIMATION_METHOD = ApproximationMethod.RDP_N;
     public static final boolean IS_ADAPTIVE = true;
     public static final double STATIC_COEFF = 0.15;
     public static final double ADAPT_COEFF = 10.0;
+    public static final double ADAPT_COEFF_X = 15.0;
+    public static final double ADAPT_COEFF_Y = 20.0;
     public static final double DBSCAN_EPS = 270.0;
-    public static final int DBSCAN_MIN_PTS = 20;
+    public static final int DBSCAN_MIN_PTS = 10;
     public static final int OUTPUT_CLUSTERS_COUNT = 11;
     public static final double RDP_EPSILON = 10.5;
     public static final int RDP_COUNT = MAX_KP_COUNT;
@@ -112,6 +114,10 @@ public class Utils {
     public static boolean checkTPValidity(TrajectoryPoint tp) {
         return tp.getX() >= IMAGE_MIN_X && tp.getX() <= IMAGE_MAX_X
                 && tp.getY() >= IMAGE_MIN_Y && tp.getY() <= IMAGE_MAX_Y;
+    }
+
+    public static void displayClusterModels(String fileName, List<Cluster> clusters, boolean save) throws IOException {
+        new DisplayImage().displayAndSaveClusterModels(fileName, "res" + fileName, "clustering-results/models/" + EXPERIMENT_ID, clusters, save);
     }
 
     public static void displayClusters(String fileName, List<Cluster> clusters, boolean save) throws IOException {
